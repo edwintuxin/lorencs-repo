@@ -31,6 +31,8 @@ int main(int argc, char* argv[]){
 	sscanf(argv[10], "%d", &t4);
 	sscanf(argv[11], "%d", &t5);
 
+	runSim();
+
 	return 0;
 }
 
