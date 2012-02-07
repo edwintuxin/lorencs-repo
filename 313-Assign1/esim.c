@@ -18,7 +18,7 @@ int K;						// number of blocks
 int F;						// size of frame
 float e;					// probability of bit error
 int R;						// length of simulation
-int R2;						// copy of R to restore after each trial
+int R2;						// copy of R to use in each trial
 int T;						// number of trials
 int t[5];					// seeds for each trial
 
@@ -29,6 +29,10 @@ int runtime;				// time that each trial runs for (< R)
 double averageFrameTx[5];	// average number of frames tx'd in each trial
 double throughput[5];		// throughput of each trial
 int K0;						// boolean that if true, means it is the special condition K = 0
+int blockSize;				// size of each block
+int r;						// amount of checkbits
+
+FILE* logfile;				// file to write results to for graphing
 
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
@@ -45,9 +49,23 @@ int main(int argc, char* argv[]){
 	sscanf(argv[9], "%d", &t[2]);
 	sscanf(argv[10], "%d", &t[3]);
 	sscanf(argv[11], "%d", &t[4]);
-	R2 = R;
 
 	printf("\n");
+
+	logfile = fopen("output.txt", "a");
+	r = 0;
+
+	if (K > 0){
+		blockSize = F/K;
+		r = getr(blockSize);
+		blockSize = blockSize + r;
+		K0 = 0;
+	} else {
+		blockSize = F;
+		// set K to 1 to treat it like the K = 1 case, except no bit errors will be allowed
+		K = 1;
+		K0 = 1;
+	}
 
 	// run simulation T times, reset variables for each trial
 	for (int i = 0; i < T; i++){
@@ -55,8 +73,7 @@ int main(int argc, char* argv[]){
 		successCount = 0;
 		runtime = 0;
 		srand(t[i]);
-		R = R2;
-		K0 = 0;
+		R2 = R;
 		runSim();
 		averageFrameTx[i] = (double)transmitCount/(double)successCount;
 		throughput[i] = ((double)F * (double)successCount)/(double)runtime;
@@ -74,28 +91,14 @@ int main(int argc, char* argv[]){
 }
 
 void runSim(){
-	int blockSize;
-	int r = 0;
-
-	if (K > 0){
-		blockSize = F/K;
-		r = getr(blockSize);
-		blockSize = blockSize + r;
-	} else {
-		blockSize = F;
-		// set K to 1 to treat it like the K = 1 case, except no bit errors will be allowed
-		K = 1;
-		K0 = 1;
-	}
-
 	// until bit time runs out
-	while (R > 0){
+	while (R2 > 0){
 		int result = 0;
 
 		//until a successful transmission
 		while (result == 0){
 			// stop running if not enough time to transmit the frame
-			if (R < (K*blockSize + A)){
+			if (R2 < (K*blockSize + A)){
 				goto breakLoop;
 			}
 			transmitCount++;
@@ -117,11 +120,22 @@ int getr(int blockSize){
 // transmit all the blocks, generate errors for them
 // if there is more than 1 error in any of the blocks, result is 0
 int transmit(int blockSize){
-	int result = 1;
 	int bitErrors;
 
+	// transmit K blocks
+	runtime = runtime + (K*blockSize) + A;
+	R2 = R2 - (K*blockSize) - A;
+
+	int checkval = 1;
+
+	// if special case K = 0, 0 errors are allowed, else 1
+	if (K0){
+		checkval = 0;
+	}
+
 	// determine the amount of bit errors in each block
-	// and "send" each block (subtract blockSize from R)
+	// if more than 'checkval' errors are detected in any of the blocks, the function returns
+	// as to not waste time; the correct bittime is still subtracted from R
 	for (int i = 0; i < K; i++){
 		bitErrors = 0;
 
@@ -129,34 +143,14 @@ int transmit(int blockSize){
 		for (int j = 0; j < blockSize; j++){
 			if (bitError()){
 				bitErrors++;
-
+			}
+			if (bitErrors > checkval){
+				return 0;
 			}
 		}
-
-		//printf("%d bit errors in block %d of frame %d!\n", bitErrors, i + 1, successCount + 1);
-		int checkval = 1;
-
-		// if special case K = 0, 0 errors are allowed, else 1
-		if (K0){
-			checkval = 0;
-		}
-
-		if (bitErrors > checkval){
-			result = 0;
-		}
-
-		// transmitting block
-		runtime = runtime + blockSize;
-		R = R - blockSize;
-		//printf("send block: %d\n", runtime);
 	}
 
-	// transmit ACK
-	runtime = runtime + A;
-	//printf("send ack:   %d\n", runtime);
-	R = R - A;
-
-	return result;
+	return 1;
 }
 
 // returns 1 if bit error, 0 otherwise
@@ -170,11 +164,10 @@ int bitError(int argc, char* argv[]){
 }
 
 void printStats(int argc, char* argv[]){
-	printf("Input parameters:\n");
-	for (int i = 0; i < argc; i++){
+	for (int i = 1; i < argc; i++){
 		printf("%s ", argv[i]);
 	}
-	printf("\n\n");
+	printf("\n");
 
 	// calculate mean of average # of frames
 	double mean = 0;
@@ -183,8 +176,9 @@ void printStats(int argc, char* argv[]){
 	}
 	mean = mean/T;
 
-	printf("Average # of Frame Transmissions: %.3f with a 95%c confidence interval of ", mean, '%');
-	printCI(mean, averageFrameTx);
+	printf("%f ", mean);
+	fprintf(logfile, "%f ", mean);
+	printCI(mean, averageFrameTx, 0);
 
 	// calculate mean throughput
 	mean = 0;
@@ -193,11 +187,13 @@ void printStats(int argc, char* argv[]){
 	}
 	mean = mean/T;
 
-	printf("Throughput: %.3f with a 95%c confidence interval of ", mean, '%');
-	printCI(mean, throughput);
+	printf("%f ", mean);
+	printCI(mean, throughput, 1);
 }
 
-void printCI(double mean, double* array){
+// print the confidence interval given the sample mean, and an array of data (of size T)
+// flag indicates if it is for the avg frames txd, or for the throughput
+void printCI(double mean, double* array, int flag){
 	double expectedSum = 0;
 	for (int i = 0; i < T; i++){
 		expectedSum = expectedSum + pow((array[i] - mean), 2);
@@ -209,7 +205,10 @@ void printCI(double mean, double* array){
 	double c1 = mean - error;
 	double c2 = mean + error;
 
-	printf("(%.3f, %.3f)\n", c1, c2);
+	printf("%f %f\n", c1, c2);
+	if (!flag){
+		fprintf(logfile, "%f %f\n", c1, c2);
+	}
 }
 
 void checkInput(int argc, char* argv[]){
