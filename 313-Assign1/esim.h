@@ -18,3 +18,5 @@ void checkInput(int argc, char* argv[]);
 int getr(int blockSize);
 int transmit(int blockSize);
 int bitError();
+void printStats(int argc, char* argv[]);
+void printCI(double mean, double* array);
