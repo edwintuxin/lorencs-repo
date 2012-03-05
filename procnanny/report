@@ -1,0 +1,48 @@
+CMPUT 379 - Assignment 1 Report
+
+
+
+Overview:
+
+
+	My implementation of this program uses a structured approach. The execution starts in the 'main' file of the program, which simply calls on functions of other files to perform the required duties of the program. There are three source file to the program: 'main', 'mainFunctions', and 'child'. The 'mainFunctions' file contains the majority of the functions used in the execution of the program. The 'child' file contains the code that is exclusively executed by the children during their run. 
+	
+
+Design and Implementation:
+
+
+	The parent process begins by calling the readFile() function, which reads the configuration file and verifies that it exists and is properly formatted. I used a dynamically allocated array of strings (2D array of chars) to store the process names to be monitored. This can be later expanded into an array of structs if future assignments require a separate timer for each process name.
+	The parent then checks for previous copies of the 'procnanny' process with killPrevious(). This function uses getPidList() to obtain a (dynamically allocated) array of PIDs that correspond to the 'procnanny' process and attempts to kill them. It confirms the kill and prints an "Info" message to the log. 
+	Next, the parent calls the initChildren() function, which forks off all the children and returns a list of PIDs (childpid) of all the children it created. This function itterates through the proccessNames array and for each name in the array, it obtains a list of PIDs corresponding to that name (using the getPidList() function mentioned earlier). If no PIDs are found, it reports it, and does not monitor that process. If there is 1 or more found, it properly reallocates memory for the childpid array and forks off a child for each PID.
+	The children then run the code inside the 'child.c' file. After sleeping for the specified time, they use the famous getPidList() function to obtain a list of PIDs corresponding to the PID they were supposed to monitor. In this case, the function only returns either an empty list, or a list of that one PID. If no PID is found, the child reports that the process exited on its own, clens up and exits. Else, it kills the process, reports to the log, and exits.
+	After all the children have been created, the parent resumes in the parentFinish() function. It waits for all the children and records their exit statuses with waitpid(). It then reports the killcount, cleans up, and exits. 
+
+	The timestamp() function timestampts a string that it is passed, and prints the message to the logfile.
+	The getPidList() function executes a command similar to "ps -u USER | grep PROCNAME" and reads the output of the command line by line.
+
+
+Testing:
+
+
+	For testing, I compiled a short list of various test scenarios, most of which I came up with during development as I noticed particualar cases. These cases are:
+	
+	- running a procces (for ex. "test.out") when the .config file specifies "test"
+		- "test.out" is not expected to be monitored
+	- specifying an invalid path to a .config file
+	- having a string on the first line of the .config file
+	- including a process name twice in the config file
+		- ignores the process name the second time (otherwise different child processes will be monitoring the same process)
+	- including 'procnanny' in the list of processes to monitor
+		- warning is printed and execution is stopped
+		- unsafe to kill the parent before it release memory, etc.
+	- specifying a wait time of '0' in .config file
+		- initilly suspected to cause race conditions, but the program ran as expected for extended trials
+	- used a script to run 1129 instances of various processes (all executing a while(1) loop) to be monitored
+		- this grinds the CPU to a halt, but eventually the program was able to properly kill all the processes it monitored, albeit after a wait time much longer than specified (due to an overburdened CPU)
+		- this test actually helped me locate an obsucre bug where after forking 205 children, a Segmentation Fault occured (due to allocating memory for an int array instead of a pid_t array)
+
+
+Conclusion:
+	
+
+	I attempted to develop this program with the expansion of future assignments in mind. Splitting the execution of the program into various reusable functions and files will hopefully make future modifications simpler. I hope to have developed a useful extension to the linux environment by the end of the third assignment.

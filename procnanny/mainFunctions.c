@@ -22,7 +22,16 @@ void readFile(char* config){
 
 	//scan in sleep time
 	char line[MAX_PROC_NAME+1];
-	fgets(line, 10, configFile);
+	fgets(line, MAX_PROC_NAME, configFile);
+
+	//check that the "number" scanned in is numeric
+	for (int i = 0; i < strlen(line); i++){
+		if(isalpha(line[i])){
+			printf("char is %c\n", line[i]);
+			fprintf(stderr, "Error: Non-numeric value on the first line of the .config file.\n");
+			exit(0);
+		}
+	}
 	sscanf(line, "%d", &sleepTime);
 
 	//scan in process names
@@ -32,19 +41,32 @@ void readFile(char* config){
 
 	// while config file has lines
 	while (fgets(line, MAX_PROC_NAME+1, configFile) != NULL) {
-		lineCount++;
+		char message[150];
+		char name[MAX_PROC_NAME];
+
+		sscanf(line, "%s", name);
 
 		// warn user that monitoring 'procnanny' will cause unexpected behavior and exit
-		if (!strcmp(line, "procnanny")){
-			char message[150];
+		if (!strcmp(name, "procnanny")){
 			strcpy(message, "Warning: You are attempting to monitor the "
 					"'procnanny' process. Exiting to avoid unexpected behavior.\n");
 			timestamp(message);
 
-			procCount = lineCount-1;
+			procCount = lineCount;
 			cleanup(NULL, NULL);
 			exit(0);
 		}
+
+		// check if the process name has been already scanned in, ignore it if it has
+		if (exists(name, lineCount)){
+			strcpy(message, "Warning: Ignoring duplicate process '");
+			strcat(message, name);
+			strcat(message, "' in the .config file.\n");
+			timestamp(message);
+			continue;
+		}
+
+		lineCount++;
 
 		// reallocate more space if there are more lines than currently alloc'd for
 		if (lineCount > currentSize){
@@ -52,16 +74,31 @@ void readFile(char* config){
 			processNames = realloc(processNames, currentSize * sizeof(char*));
 		}
 
-
 		// allocate space in the string array for a string of appropriate name
 		processNames[lineCount-1] = malloc(sizeof(char)*(strlen(line)+1));
-		sscanf(line, "%s", processNames[lineCount-1]);
+		strcpy(processNames[lineCount-1], name);
 	}
 
 	//set process count
 	procCount = lineCount;
 
 	fclose(configFile);
+}
+
+// returns true if the string 'line' exists in the processNames array
+// arraySize is passed because the check is done as the array is being
+// dynamically allocated
+int exists(char* line, int arraySize){
+	int returnVal = 0;
+
+	for (int i = 0; i < arraySize; i++){
+		if (!strcmp(line, processNames[i])){
+			returnVal = 1;
+			break;
+		}
+	}
+
+	return returnVal;
 }
 
 // kills all previous instances of procnanny
@@ -231,7 +268,7 @@ void timestamp(char* input){
 
 	char line[30];
 	fgets(line, 128, fp);
-	fclose(fp);
+	pclose(fp);
 
 	char output[1000] = "[";
 	strcat(output, line);
@@ -240,7 +277,6 @@ void timestamp(char* input){
 	strcat(output, input);
 	fprintf(logfile, output);
 	fflush(logfile);
-	printf("%s", output);
 }
 
 // parent waits for children and prints closing remarks to logfile
