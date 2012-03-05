@@ -50,9 +50,11 @@ int main(int argc, char* argv[]) {
  * 		- ran processes named for ex "test.out", when config file specifies just "test"
  * 		- not including a number as the first line of config file
  * 		- invalid config file
+ * 		- have the same process twice in the config file
  *
  * 		Tests done:
  * 		- ran 1129 copies of a process named 'one'.
  * 		- specific process names (eg. test vs. test.out)
  * 		- inclusing 'procnanny' in the config file as one of the processes to monitor
+ * 		- run a config file with a 0 seconds wait time
  */

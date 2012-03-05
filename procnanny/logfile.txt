@@ -1,3 +1,19 @@
-[Wed Feb  8 18:20:39 MST 2012] Info: No 'one' processes found.
-[Wed Feb  8 18:20:39 MST 2012] Info: No 'two' processes found.
-[Wed Feb  8 18:20:39 MST 2012] Info: Exiting. 0 process(es) killed.
+[Wed Feb  8 20:38:24 MST 2012] Warning: Ignoring duplicate process 'two' in the .config file.
+[Wed Feb  8 20:38:24 MST 2012] Action: Cleaned up 6 previous 'procnanny' process(es).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14193).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14191).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14196).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14197).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14194).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'one' (PID 14192).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'two' (PID 14190).
+[Wed Feb  8 20:38:24 MST 2012] Info: Initializing monitoring of process 'two' (PID 14195).
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14191 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14196 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14197 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14194 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14193 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14192 (one) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14195 (two) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Action: PID 14190 (two) killed after exceeding 12 seconds.
+[Wed Feb  8 20:38:36 MST 2012] Info: Exiting. 8 process(es) killed.

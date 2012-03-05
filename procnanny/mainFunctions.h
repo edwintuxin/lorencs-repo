@@ -17,7 +17,7 @@
 #include "memwatch.h"
 
 #define MAX_PROC_NAME 128
-#define MAX_USER_NAME 10
+#define MAX_USER_NAME 15
 
 #ifndef MAINFUNCTIONS_H_
 #define MAINFUNCTIONS_H_
@@ -33,6 +33,7 @@ int* getPidList(char* procName, int *arraySize);
 void cleanup(int *childpid, int *status);
 pid_t* initChildren(int *pid, int *childCount);
 void parentFinish(pid_t* childpid, int childCount);
+int exists(char* line, int arraySize);
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);
@@ -40,3 +41,4 @@ int pclose(FILE *stream);
 int getpid();
 int strnlen();
 int kill(pid_t pid, int sig);
+int isalpha(int character);
