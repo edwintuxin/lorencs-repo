@@ -25,6 +25,18 @@
 
 #endif /* MAINFUNCTIONS_H_ */
 
+typedef struct {
+	char name[MAX_PROC_NAME];
+	int sleep;
+} procs;
+
+typedef struct {
+	int childId;
+	int pid;
+	int fd[2];
+	int busy;
+} child;
+
 void readFile(char* config);
 void killPrevious(int parentID);
 void killProcess(char* procName);
