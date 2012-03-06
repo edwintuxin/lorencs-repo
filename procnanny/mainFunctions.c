@@ -3,11 +3,11 @@
 
 //global variables from main
 extern int sleepTime;
-extern char** processNames;
 extern char procToKill[MAX_PROC_NAME];
 extern int pidToKill;
 extern int procCount;
 extern FILE* logfile;
+extern procs monitorProcs[128];
 
 //reads the config file and stores the info from it
 void readFile(char* config){
@@ -20,31 +20,17 @@ void readFile(char* config){
 		exit(0);
 	}
 
-	//scan in sleep time
-	char line[MAX_PROC_NAME+1];
-	fgets(line, MAX_PROC_NAME, configFile);
-
-	//check that the "number" scanned in is numeric
-	for (int i = 0; i < strlen(line); i++){
-		if(isalpha(line[i])){
-			printf("char is %c\n", line[i]);
-			fprintf(stderr, "Error: Non-numeric value on the first line of the .config file.\n");
-			exit(0);
-		}
-	}
-	sscanf(line, "%d", &sleepTime);
-
 	//scan in process names
-	int currentSize = 1;
+	char line[MAX_PROC_NAME+1];
 	int lineCount = 0;
-	processNames = malloc(currentSize*sizeof(char*));
 
 	// while config file has lines
 	while (fgets(line, MAX_PROC_NAME+1, configFile) != NULL) {
 		char message[150];
 		char name[MAX_PROC_NAME];
+		int sleeptime;
 
-		sscanf(line, "%s", name);
+		sscanf(line, "%s %d", name, &sleeptime);
 
 		// warn user that monitoring 'procnanny' will cause unexpected behavior and exit
 		if (!strcmp(name, "procnanny")){
@@ -57,6 +43,8 @@ void readFile(char* config){
 			exit(0);
 		}
 
+
+
 		// check if the process name has been already scanned in, ignore it if it has
 		if (exists(name, lineCount)){
 			strcpy(message, "Warning: Ignoring duplicate process '");
@@ -68,15 +56,8 @@ void readFile(char* config){
 
 		lineCount++;
 
-		// reallocate more space if there are more lines than currently alloc'd for
-		if (lineCount > currentSize){
-			currentSize = currentSize*2;
-			processNames = realloc(processNames, currentSize * sizeof(char*));
-		}
-
-		// allocate space in the string array for a string of appropriate name
-		processNames[lineCount-1] = malloc(sizeof(char)*(strlen(line)+1));
-		strcpy(processNames[lineCount-1], name);
+		strcpy(monitorProcs[lineCount-1].name, name);
+		monitorProcs[lineCount-1].sleep = sleeptime;
 	}
 
 	//set process count
@@ -92,7 +73,7 @@ int exists(char* line, int arraySize){
 	int returnVal = 0;
 
 	for (int i = 0; i < arraySize; i++){
-		if (!strcmp(line, processNames[i])){
+		if (!strcmp(line, monitorProcs[i].name)){
 			returnVal = 1;
 			break;
 		}
@@ -150,28 +131,29 @@ void killPrevious(int parentID){
 
 // initializes all the children, returns the array of child PIDs
 // take pointer to pid (main needs the modified value of it) and pointer to childCount
-pid_t * initChildren(int *pid, int *childCount){
+initChildren(int *pid, int *childCount){
     int *pidList;
     int pidCount;
     int arraySize = procCount;
 
     // dynamic array to hold the pids of children
-    pid_t *childpid = malloc(procCount * sizeof(pid_t));
+	childPool = malloc(procCount*sizeof(child));
 
     // for each process in config file, init a child (or children if more than one
     // instance of the process)
 	for(int i = 0; i < procCount; i++){
 		char message[100];
-		strcpy(procToKill, processNames[i]);
+		strcpy(procToKill, monitorProcs[i].name);
+		sleepTime = monitorProcs[i].sleep;
 
 		// get list of PIDs with the process name
-		pidList = getPidList(processNames[i], &pidCount);
+		pidList = getPidList(monitorProcs[i].name, &pidCount);
 
 		switch(pidCount){
 		// no procceses found with that name
 		case 0:
 			strcpy(message,"Info: No '");
-			strcat(message, processNames[i]);
+			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
 			timestamp(message);
 			*pid = -1;
@@ -185,13 +167,15 @@ pid_t * initChildren(int *pid, int *childCount){
 			if(*pid == 0){
 				break;
 			} else if(*pid > 0){
-				childpid[*childCount-1] = *pid;
+				childPool[*childCount-1].pid = *pid;
+				childPool[*childCount-1].childId = childCount-1;
+				childPool[*childCount-1].busy = 1;
 			}
 			break;
 		// more than one process with that name
 		// need to realloc childpid array size
 		default:
-			childpid = realloc(childpid, (arraySize + pidCount)*sizeof(pid_t));
+			childPool = realloc(childPool, (arraySize + pidCount)*sizeof(child));
 			arraySize = arraySize + pidCount;
 
 			// for each PID associated with the proccess, fork off a child
@@ -203,7 +187,9 @@ pid_t * initChildren(int *pid, int *childCount){
 				if(*pid == 0){
 					break;
 				} else if(*pid > 0){
-					childpid[*childCount-1] = *pid;
+					childPool[*childCount-1].pid = *pid;
+					childPool[*childCount-1].childId = childCount-1;
+					childPool[*childCount-1].busy = 1;
 				}
 			}
 		}
@@ -214,7 +200,6 @@ pid_t * initChildren(int *pid, int *childCount){
 			break;
 		}
 	}
-	return childpid;
 }
 
 // returns a list of PIDs associate with 'procName' and sets arraySize
@@ -275,6 +260,7 @@ void timestamp(char* input){
 	output[29] = '\0';
 	strcat(output, "] ");
 	strcat(output, input);
+	printf(output);
 	fprintf(logfile, output);
 	fflush(logfile);
 }
@@ -310,12 +296,12 @@ void parentFinish(pid_t* childpid, int childCount){
 
 // cleans up allocated memory and file pointers
 void cleanup(int *childpid, int *status){
-	for(int i = 0; i < procCount; i++){
+	/*for(int i = 0; i < procCount; i++){
 		//printf("freeing processNames[%d]\n", i);
 		free(processNames[i]);
-	}
+	}*/
 
-	free(processNames);
+	//free(processNames);
 	if (childpid != NULL){
 			free(childpid);
 		}

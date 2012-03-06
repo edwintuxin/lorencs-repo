@@ -16,7 +16,7 @@ extern char procToKill[MAX_PROC_NAME];	/* name of the current process to kill */
 extern int pidToKill;					/* pid of the current process to kill */
 extern FILE *logfile;					/* pointer to log file*/
 
-void childExec(pid_t *childpid){
+void childExec(pid_t *childpid, int childId){
 	int retval;			/* child's return value */
 	int killResult;		/* boolean to hold the return value of the kill funct */
 	char string[20];	/* string to convert integers into string*/
