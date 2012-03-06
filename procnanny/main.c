@@ -18,10 +18,12 @@ int procCount;					/* count of processes to monitor */
 procs monitorProcs[128];		/* array of structs */
 child *childPool;				/* pool of all children */
 int poolSize;					/* size of currently malloced pool */
+int childCount;					/* current count of children in pool */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
-	int childCount = 0;			/* count of children */
+	childCount = 0;				/* count of children */
+	int child_pipes[2];			/* the set of pipes that will be passed to each child */
 
 	if (argc != 2){
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
@@ -29,32 +31,23 @@ int main(int argc, char* argv[]) {
 	}
 
 	logfile = fopen(getenv("PROCNANNYLOGS"), "w");
-	 if (logfile == NULL) {
-	        printf("Error");
-	    }
-
 
     readFile(argv[1]);			/* read in the config file */
     killPrevious(getpid()); 	/* kill previous instances of procnanny */
 
-    // initialize the children and return an array of their PIDs
-    initChildren(&pid, &childCount);
+    // initialize the children
+    initChildren(&pid, child_pipes);
 
     if(pid == 0){
-    	childExec(childpid); 	// child code
+    	childExec(childPool,childCount, child_pipes); 	// child code
     }
 
     // parent code (child has exited by now)
-    parentFinish(childpid, childCount);
-
-    for (int i = 0; i < procCount; i++){
-    	printf("Name: %s\n", monitorProcs[i].name);
-    	printf("Sleeptime: %d\n", monitorProcs[i].sleep);
-    }
+    parentFinish(childPool);
 
     return (EXIT_SUCCESS);
 }
 
 /*
- *
+ * fix tghe bufgfering of messages
  */

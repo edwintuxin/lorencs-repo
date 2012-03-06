@@ -8,6 +8,8 @@ extern int pidToKill;
 extern int procCount;
 extern FILE* logfile;
 extern procs monitorProcs[128];
+extern int childCount;
+extern child *childPool;
 
 //reads the config file and stores the info from it
 void readFile(char* config){
@@ -131,10 +133,11 @@ void killPrevious(int parentID){
 
 // initializes all the children, returns the array of child PIDs
 // take pointer to pid (main needs the modified value of it) and pointer to childCount
-initChildren(int *pid, int *childCount){
+void initChildren(int *pid, int *child_pipes){
     int *pidList;
     int pidCount;
     int arraySize = procCount;
+    char pidString[100];
 
     // dynamic array to hold the pids of children
 	childPool = malloc(procCount*sizeof(child));
@@ -143,6 +146,7 @@ initChildren(int *pid, int *childCount){
     // instance of the process)
 	for(int i = 0; i < procCount; i++){
 		char message[100];
+
 		strcpy(procToKill, monitorProcs[i].name);
 		sleepTime = monitorProcs[i].sleep;
 
@@ -160,36 +164,68 @@ initChildren(int *pid, int *childCount){
 			break;
 		// 1 process found with that name
 		case 1:
-			pidToKill = pidList[0];
-			*childCount = *childCount + 1;
+			sprintf(pidString, "%d", pidList[0]);
+			childCount = childCount + 1;
+			pipe(childPool[childCount-1].fd);
+			child_pipes[0] = childPool[childCount-1].fd[0];
+			child_pipes[1] = childPool[childCount-1].fd[1];
+
 			*pid = fork();
 
 			if(*pid == 0){
 				break;
 			} else if(*pid > 0){
-				childPool[*childCount-1].pid = *pid;
-				childPool[*childCount-1].childId = childCount-1;
-				childPool[*childCount-1].busy = 1;
+				childPool[childCount-1].pid = *pid;
+				childPool[childCount-1].childId = childCount-1;
+				childPool[childCount-1].busy = 1;
+
+				char writeStr[100];
+				strcpy(writeStr, monitorProcs[i].name);
+				strcat(writeStr, " ");
+				strcat(writeStr, pidString);
+				strcat(writeStr, " ");
+				char sleepStr[10];
+				sprintf(sleepStr, "%d", sleepTime);
+				strcat(writeStr, sleepStr);
+
+				write(childPool[childCount-1].fd[1], writeStr, 128);
+				write(childPool[childCount-1].fd[1], "exit", 128);
 			}
 			break;
 		// more than one process with that name
-		// need to realloc childpid array size
+		// need to realloc childPool array size
 		default:
 			childPool = realloc(childPool, (arraySize + pidCount)*sizeof(child));
 			arraySize = arraySize + pidCount;
 
 			// for each PID associated with the proccess, fork off a child
 			for(int j = 0; j < pidCount; j++){
-				pidToKill = pidList[j];
-				*childCount = *childCount + 1;
+				sprintf(pidString, "%d", pidList[j]);
+				childCount = childCount + 1;
+				pipe(childPool[childCount-1].fd);
+				child_pipes[0] = childPool[childCount-1].fd[0];
+				child_pipes[1] = childPool[childCount-1].fd[1];
+
 				*pid = fork();
 
 				if(*pid == 0){
 					break;
 				} else if(*pid > 0){
-					childPool[*childCount-1].pid = *pid;
-					childPool[*childCount-1].childId = childCount-1;
-					childPool[*childCount-1].busy = 1;
+					childPool[childCount-1].pid = *pid;
+					childPool[childCount-1].childId = childCount-1;
+					childPool[childCount-1].busy = 1;
+
+					char writeStr[100];
+					strcpy(writeStr, monitorProcs[i].name);
+					strcat(writeStr, " ");
+					strcat(writeStr, pidString);
+					strcat(writeStr, " ");
+					char sleepStr[10];
+					sprintf(sleepStr, "%d", sleepTime);
+					strcat(writeStr, sleepStr);
+
+					write(childPool[childCount-1].fd[1], writeStr, 128);
+					write(childPool[childCount-1].fd[1], "exit", 128);
 				}
 			}
 		}
@@ -266,12 +302,12 @@ void timestamp(char* input){
 }
 
 // parent waits for children and prints closing remarks to logfile
-void parentFinish(pid_t* childpid, int childCount){
+void parentFinish(child* childPool){
 	int *status = malloc(childCount * sizeof(int));
 
 	/* wait for all children, save their status to status[i]*/
 	for(int i = 0; i< childCount; i++){
-		waitpid(childpid[i],&status[i],0);
+		waitpid(childPool[i].pid,&status[i],0);
 	}
 
     /* count how many children returned 1 (killed a process) */
@@ -291,20 +327,25 @@ void parentFinish(pid_t* childpid, int childCount){
 	strcat(message, " process(es) killed.\n");
 	timestamp(message);
 
-    cleanup(childpid, status);
+    cleanup(childPool, status);
 }
 
 // cleans up allocated memory and file pointers
-void cleanup(int *childpid, int *status){
+void cleanup(child *childPool, int *status){
 	/*for(int i = 0; i < procCount; i++){
 		//printf("freeing processNames[%d]\n", i);
 		free(processNames[i]);
 	}*/
 
 	//free(processNames);
-	if (childpid != NULL){
-			free(childpid);
-		}
+	if (childPool != NULL){
+		/*for(int i = 0; i < childCount; i++){
+			free(&childPool[i]);
+		}*/
+
+		free(childPool);
+	}
+
 	if (status != NULL){
 		free(status);
 	}

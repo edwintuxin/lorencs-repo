@@ -13,4 +13,7 @@
 
 #endif /* CHILD_H_ */
 
-void childExec(pid_t *childpid);
+void childExec(child *childPool, int childId, int *child_read);
+void getdtablesize();
+void childExit(child *childPool);
+void monitorProcess(char *procToKill, char *pidToKill, int sleepTime);

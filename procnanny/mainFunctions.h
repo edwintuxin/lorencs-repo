@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/select.h>
 #include "memwatch.h"
 
 #define MAX_PROC_NAME 128
@@ -42,9 +43,9 @@ void killPrevious(int parentID);
 void killProcess(char* procName);
 void timestamp(char* input);
 int* getPidList(char* procName, int *arraySize);
-void cleanup(int *childpid, int *status);
-pid_t* initChildren(int *pid, int *childCount);
-void parentFinish(pid_t* childpid, int childCount);
+void cleanup(child *childPool, int *status);
+void initChildren(int *pid, int *child_pipes);
+void parentFinish(child* childPool);
 int exists(char* line, int arraySize);
 
 // Non-C99 compliant function prototypes
