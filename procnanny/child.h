@@ -13,7 +13,6 @@
 
 #endif /* CHILD_H_ */
 
-void childExec(child *childPool, int childId, int *child_read);
-void getdtablesize();
+void childExec(child *childPool, int childId, int *child_pipes);
 void childExit(child *childPool);
 void monitorProcess(char *procToKill, char *pidToKill, int sleepTime);

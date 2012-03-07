@@ -10,6 +10,7 @@ extern FILE* logfile;
 extern procs monitorProcs[128];
 extern int childCount;
 extern child *childPool;
+extern struct pipeMessage* msg;
 
 //reads the config file and stores the info from it
 void readFile(char* config){
@@ -188,8 +189,14 @@ void initChildren(int *pid, int *child_pipes){
 				sprintf(sleepStr, "%d", sleepTime);
 				strcat(writeStr, sleepStr);
 
-				write(childPool[childCount-1].fd[1], writeStr, 128);
-				write(childPool[childCount-1].fd[1], "exit", 128);
+				msg = init_message(writeStr);
+				write_message(childPool[childCount-1].fd[1],msg);
+				free(msg->body);
+				free(msg);
+				msg = init_message("exit");
+				write_message(childPool[childCount-1].fd[1],msg);
+				free(msg->body);
+				free(msg);
 			}
 			break;
 		// more than one process with that name
@@ -228,6 +235,7 @@ void initChildren(int *pid, int *child_pipes){
 					write(childPool[childCount-1].fd[1], "exit", 128);
 				}
 			}
+			break;
 		}
 
 		free(pidList);
@@ -332,18 +340,13 @@ void parentFinish(child* childPool){
 
 // cleans up allocated memory and file pointers
 void cleanup(child *childPool, int *status){
-	/*for(int i = 0; i < procCount; i++){
-		//printf("freeing processNames[%d]\n", i);
-		free(processNames[i]);
-	}*/
-
-	//free(processNames);
 	if (childPool != NULL){
-		/*for(int i = 0; i < childCount; i++){
-			free(&childPool[i]);
-		}*/
-
 		free(childPool);
+	}
+
+	if (msg != NULL){
+		free(msg->body);
+		free(msg);
 	}
 
 	if (status != NULL){

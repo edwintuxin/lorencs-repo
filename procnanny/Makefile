@@ -4,8 +4,8 @@
 
 CFLAGS = -g -O0
 
-procnanny: main.o  mainFunctions.o child.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o procnanny main.o mainFunctions.o child.o memwatch.o -lm
+procnanny: main.o  mainFunctions.o child.o pipeMessage.o memwatch.o
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny main.o mainFunctions.o child.o pipeMessage.o memwatch.o -lm
 
 main.o: main.c memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO main.c
@@ -15,6 +15,9 @@ child.o: child.c child.h memwatch.h
 	
 mainFunctions.o: mainFunctions.c mainFunctions.h memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO mainFunctions.c
+	
+pipeMessage.o: pipeMessage.c pipeMessage.h memwatch.h
+	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO pipeMessage.c
 
 memwatch.o: memwatch.c memwatch.h
 	gcc $(CFLAGS) -std=c99 -Wall -c -DMEMWATCH -DMW_STDIO memwatch.c 
@@ -24,6 +27,7 @@ clean:
 	-rm -f *.o main core
 	-rm -f *.o mainFunctions core
 	-rm -f *.o child core
+	-rm -f *.o pipeMessage core
 	-rm -f *.o *.log memwatch core
 	
 #tar:

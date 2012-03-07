@@ -19,6 +19,7 @@ procs monitorProcs[128];		/* array of structs */
 child *childPool;				/* pool of all children */
 int poolSize;					/* size of currently malloced pool */
 int childCount;					/* current count of children in pool */
+struct pipeMessage* msg;		/* pointer for the pipe messages */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */

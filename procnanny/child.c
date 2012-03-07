@@ -12,15 +12,19 @@
 #include "child.h"
 
 /* global vars from main */
+struct pipeMessage* msg;
 extern FILE *logfile;					/* pointer to log file*/
 int retval;								/* child's return value */
 
-void childExec(child *childPool, int childId, int *child_read){
+void childExec(child *childPool, int childId, int *child_pipes){
 	while(1){
 
 		char message[256];
 		memset(message, 0, 256);
-		read(child_read[0], message, 256);
+		msg = read_message(child_pipes[0]);
+		strcpy(message, msg->body);
+		free(msg->body);
+		free(msg);
 
 		if (!strcmp(message, "exit")){
 			childExit(childPool);
