@@ -231,8 +231,14 @@ void initChildren(int *pid, int *child_pipes){
 					sprintf(sleepStr, "%d", sleepTime);
 					strcat(writeStr, sleepStr);
 
-					write(childPool[childCount-1].fd[1], writeStr, 128);
-					write(childPool[childCount-1].fd[1], "exit", 128);
+					msg = init_message(writeStr);
+					write_message(childPool[childCount-1].fd[1],msg);
+					free(msg->body);
+					free(msg);
+					msg = init_message("exit");
+					write_message(childPool[childCount-1].fd[1],msg);
+					free(msg->body);
+					free(msg);
 				}
 			}
 			break;

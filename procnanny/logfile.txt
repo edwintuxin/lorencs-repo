@@ -1,34 +1,4 @@
-[Tue Mar  6 15:33:32 MST 2012] Action: Cleaned up 18 previous 'procnanny' process(es).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26666).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26679).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26681).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26682).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26677).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26673).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26675).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 26669).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 26674).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 26667).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 26676).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 26678).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 26670).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'elm' (PID 26672).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'elm' (PID 26671).
-[Tue Mar  6 15:33:32 MST 2012] Info: Initializing monitoring of process 'elm' (PID 26668).
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26681 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26677 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26666 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26675 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26673 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26679 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26682 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26669 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:33 MST 2012] Action: PID 26680 (a.out) killed after exceeding 1 seconds.
-[Tue Mar  6 15:33:34 MST 2012] Action: PID 26667 (prog2) killed after exceeding 2 seconds.
-[Tue Mar  6 15:33:34 MST 2012] Action: PID 26676 (prog2) killed after exceeding 2 seconds.
-[Tue Mar  6 15:33:34 MST 2012] Action: PID 26674 (prog2) killed after exceeding 2 seconds.
-[Tue Mar  6 15:33:34 MST 2012] Action: PID 26670 (prog2) killed after exceeding 2 seconds.
-[Tue Mar  6 15:33:34 MST 2012] Action: PID 26678 (prog2) killed after exceeding 2 seconds.
-[Tue Mar  6 15:33:35 MST 2012] Action: PID 26671 (elm) killed after exceeding 3 seconds.
-[Tue Mar  6 15:33:35 MST 2012] Action: PID 26672 (elm) killed after exceeding 3 seconds.
-[Tue Mar  6 15:33:35 MST 2012] Action: PID 26668 (elm) killed after exceeding 3 seconds.
+[Tue Mar  6 23:41:41 MST 2012] Info: No 'a.out' processes found.
+[Tue Mar  6 23:41:41 MST 2012] Info: No 'prog2' processes found.
+[Tue Mar  6 23:41:41 MST 2012] Info: No 'elm' processes found.
+[Tue Mar  6 23:41:41 MST 2012] Info: Exiting. 0 process(es) killed.
