@@ -1,4 +1,33 @@
-[Wed Mar  7 12:52:51 MST 2012] Action: Cleaned up 1 previous 'procnanny' process(es).
-[Wed Mar  7 12:52:51 MST 2012] Info: No 'a.out' processes found.
-[Wed Mar  7 12:52:51 MST 2012] Info: No 'prog2' processes found.
-[Wed Mar  7 12:52:51 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:08 MST 2012] Action: Cleaned up 4 previous 'procnanny' process(es).
+[Wed Mar  7 22:28:08 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:08 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 10700).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 10703).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 10708).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 10711).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'elm' (PID 10701).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'elm' (PID 10704).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'elm' (PID 10709).
+[Wed Mar  7 22:28:14 MST 2012] Info: Initializing monitoring of process 'elm' (PID 10712).
+[Wed Mar  7 22:28:23 MST 2012] Info: PID 10709 (elm) has exited before exceeding 9 seconds.
+[Wed Mar  7 22:28:23 MST 2012] Info: PID 10704 (elm) has exited before exceeding 9 seconds.
+[Wed Mar  7 22:28:23 MST 2012] Info: PID 10701 (elm) has exited before exceeding 9 seconds.
+[Wed Mar  7 22:28:23 MST 2012] Action: PID 10712 (elm) killed after exceeding 9 seconds.
+[Wed Mar  7 22:28:24 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 10736).
+[Wed Mar  7 22:28:25 MST 2012] Info: PID 10703 (a.out) has exited before exceeding 11 seconds.
+[Wed Mar  7 22:28:25 MST 2012] Info: PID 10700 (a.out) has exited before exceeding 11 seconds.
+[Wed Mar  7 22:28:25 MST 2012] Info: PID 10708 (a.out) has exited before exceeding 11 seconds.
+[Wed Mar  7 22:28:25 MST 2012] Info: PID 10711 (a.out) has exited before exceeding 11 seconds.
+[Wed Mar  7 22:28:29 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:29 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:34 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:34 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:35 MST 2012] Info: PID 10736 (a.out) has exited before exceeding 11 seconds.
+[Wed Mar  7 22:28:35 MST 2012] Info: Initializing monitoring of process 'elm' (PID 10737).
+[Wed Mar  7 22:28:39 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:39 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:44 MST 2012] Info: PID 10737 (elm) has exited before exceeding 9 seconds.
+[Wed Mar  7 22:28:44 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:44 MST 2012] Info: No 'elm' processes found.
+[Wed Mar  7 22:28:49 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 22:28:49 MST 2012] Info: No 'elm' processes found.

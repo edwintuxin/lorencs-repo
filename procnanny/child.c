@@ -14,24 +14,25 @@
 struct pipeMessage* msg;
 int msgVal;								/* child's return value */
 
-void childExec(int *child_pipes){
+void childExec(int *c2p, int *p2c){
 	while(1){
 
 		char message[256];
 		memset(message, 0, 256);
-		msg = read_message(child_pipes[0]);
+		msg = read_message(p2c[0]);
 		strcpy(message, msg->body);
 		resetMsg();
 
+		//printf("message is: %s\n", message);
 		if (!strcmp(message, "exit")){
 			childExit();
-		} else {
+		} else if (!strncmp(message, "monitor", 7)){
 			char procToKill[MAX_PROC_NAME];
 			char pidToKill[20];
 			int sleepTime;
 
-			sscanf(message, "%s %s %d", procToKill, pidToKill, &sleepTime);
-			monitorProcess(procToKill, pidToKill, sleepTime, child_pipes);
+			sscanf(message, "monitor %s %s %d", procToKill, pidToKill, &sleepTime);
+			monitorProcess(procToKill, pidToKill, sleepTime, c2p, p2c);
 		}
 
 	}
@@ -42,7 +43,7 @@ void childExit(){
 	exit(1);
 }
 
-void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *child_pipes){
+void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, int *p2c){
 	int killResult;		/* boolean to hold the return value of the kill funct */
 	int *pidList;
 	int pidCount;
@@ -111,7 +112,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *child
 	sprintf(msgValStr, "%d", msgVal);
 	strcat(msgStr, msgValStr);
 	msg = init_message(msgStr);
-	write_message(child_pipes[1],msg);
+	write_message(c2p[1],msg);
 	resetMsg();
 
 	free(pidList);

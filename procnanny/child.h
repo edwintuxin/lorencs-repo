@@ -13,6 +13,6 @@
 
 #endif /* CHILD_H_ */
 
-void childExec(int *child_pipes);
+void childExec(int *c2p, int *p2c);
 void childExit();
-void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *child_pipes);
+void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, int *p2c);
