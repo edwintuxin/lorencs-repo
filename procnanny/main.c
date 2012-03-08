@@ -6,13 +6,10 @@
  */
 
 #include "mainFunctions.h"
-#include "child.h"
 #include "memwatch.h"
 
 /* Global variables */
 int sleepTime;					/* amount of time to sleep to pass to child */
-char procToKill[MAX_PROC_NAME];	/* name of the current process to kill (to pass to child) */
-int pidToKill;					/* pid of the current process to kill */
 FILE *logfile;					/* pointer to log file */
 int procCount;					/* count of processes to monitor */
 procs monitorProcs[128];		/* array of structs */
@@ -27,8 +24,9 @@ int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
 	childCount = 0;
 	idleChildCount = 0;
-	killcount = 0;
-	int child_pipes[2];			/* the set of pipes that will be passed to each child */
+	killCount = 0;
+	int c2p[2];			/* the set of pipes that will be passed to each child */
+	int p2c[2];
 
 	if (argc != 2){
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
@@ -41,10 +39,10 @@ int main(int argc, char* argv[]) {
     killPrevious(getpid()); 	/* kill previous instances of procnanny */
 
     // initialize the children
-    initChildren(&pid, child_pipes);
+    initChildren(&pid, c2p, p2c);
 
     if(pid == 0){
-    	childExec(child_pipes); 	// child code
+    	childExec(c2p, p2c); 	// child code
     }
 
     // parent loops forever until it is sent SIGINT

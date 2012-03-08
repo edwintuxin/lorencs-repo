@@ -3,15 +3,14 @@
 
 //global variables from main
 extern int sleepTime;
-extern char procToKill[MAX_PROC_NAME];
-extern int pidToKill;
 extern int procCount;
 extern FILE* logfile;
 extern procs monitorProcs[128];
 extern int childCount;
+extern int idleChildCount;
 extern child *childPool;
 extern struct pipeMessage* msg;
-extern killcount;
+extern int killCount;
 
 //reads the config file and stores the info from it
 void readFile(char* config){
@@ -135,7 +134,8 @@ void killPrevious(int parentID){
 
 // initializes all the children, returns the array of child PIDs
 // take pointer to pid (main needs the modified value of it) and pointer to childCount
-void initChildren(int *pid, int *child_pipes){
+void initChildren(int *pid, int *_c2p, int *_p2c){
+	char procToKill[MAX_PROC_NAME];
     int *pidList;
     int pidCount;
     int arraySize = procCount;
@@ -168,21 +168,24 @@ void initChildren(int *pid, int *child_pipes){
 		case 1:
 			sprintf(pidString, "%d", pidList[0]);
 			childCount = childCount + 1;
-			pipe(childPool[childCount-1].fd);
-			child_pipes[0] = childPool[childCount-1].fd[0];
-			child_pipes[1] = childPool[childCount-1].fd[1];
+			pipe(childPool[childCount-1].p2c);
+			pipe(childPool[childCount-1].c2p);
+			_c2p[0] = childPool[childCount-1].c2p[0];
+			_c2p[1] = childPool[childCount-1].c2p[1];
+			_p2c[0] = childPool[childCount-1].p2c[0];
+			_p2c[1] = childPool[childCount-1].p2c[1];
 
 			*pid = fork();
 
 			if(*pid == 0){
 				break;
 			} else if(*pid > 0){
-				childPool[childCount-1].pid = *pid;
+				childPool[childCount-1].m_pid = pidList[0];
 				childPool[childCount-1].childId = childCount-1;
-				childPool[childCount-1].busy = 1;
 
 				char writeStr[100];
-				strcpy(writeStr, monitorProcs[i].name);
+				strcpy(writeStr, "monitor ");
+				strcat(writeStr, monitorProcs[i].name);
 				strcat(writeStr, " ");
 				strcat(writeStr, pidString);
 				strcat(writeStr, " ");
@@ -191,10 +194,7 @@ void initChildren(int *pid, int *child_pipes){
 				strcat(writeStr, sleepStr);
 
 				msg = init_message(writeStr);
-				write_message(childPool[childCount-1].fd[1],msg);
-				resetMsg();
-				msg = init_message("exit");
-				write_message(childPool[childCount-1].fd[1],msg);
+				write_message(childPool[childCount-1].p2c[1],msg);
 				resetMsg();
 			}
 			break;
@@ -208,21 +208,24 @@ void initChildren(int *pid, int *child_pipes){
 			for(int j = 0; j < pidCount; j++){
 				sprintf(pidString, "%d", pidList[j]);
 				childCount = childCount + 1;
-				pipe(childPool[childCount-1].fd);
-				child_pipes[0] = childPool[childCount-1].fd[0];
-				child_pipes[1] = childPool[childCount-1].fd[1];
+				pipe(childPool[childCount-1].p2c);
+				pipe(childPool[childCount-1].c2p);
+				_c2p[0] = childPool[childCount-1].c2p[0];
+				_c2p[1] = childPool[childCount-1].c2p[1];
+				_p2c[0] = childPool[childCount-1].p2c[0];
+				_p2c[1] = childPool[childCount-1].p2c[1];
 
 				*pid = fork();
 
 				if(*pid == 0){
 					break;
 				} else if(*pid > 0){
-					childPool[childCount-1].pid = *pid;
+					childPool[childCount-1].m_pid = pidList[j];
 					childPool[childCount-1].childId = childCount-1;
-					childPool[childCount-1].busy = 1;
 
 					char writeStr[100];
-					strcpy(writeStr, monitorProcs[i].name);
+					strcpy(writeStr, "monitor ");
+					strcat(writeStr, monitorProcs[i].name);
 					strcat(writeStr, " ");
 					strcat(writeStr, pidString);
 					strcat(writeStr, " ");
@@ -231,11 +234,7 @@ void initChildren(int *pid, int *child_pipes){
 					strcat(writeStr, sleepStr);
 
 					msg = init_message(writeStr);
-					write_message(childPool[childCount-1].fd[1],msg);
-					resetMsg();
-
-					msg = init_message("exit");
-					write_message(childPool[childCount-1].fd[1],msg);
+					write_message(childPool[childCount-1].p2c[1],msg);
 					resetMsg();
 				}
 			}
@@ -296,7 +295,12 @@ void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
 		readChildMessages();	/* check if any children have left messages and process them */
-		printf("5 secs!\n");
+
+		printf("[Child Count]   : %d\n", childCount);
+		printf("[Idle Children] : %d\n", idleChildCount);
+		printf("[Kill Count]    : %d\n\n", killCount);
+
+		rescanProcs();			/* look for the processes in the most recent config file */
 	}
 }
 
@@ -306,30 +310,208 @@ void readChildMessages(){
 	struct timeval tv;
 
 	maxdesc = getdtablesize();
-	FD_ZERO(&read_from);
+
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
 	for (int i = 0; i < childCount; i++){
-		FD_SET(childPool[childCount-1].fd[0], &read_from);
+		FD_ZERO(&read_from);
+		FD_SET(childPool[i].c2p[0], &read_from);
+
 		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
 		if(ret){
-			printf("child %d has sent a message!\n", i);
+			char message[256];
+			memset(message, 0, 256);
+			msg = read_message(childPool[i].c2p[0]);
+			strcpy(message, msg->body);
+			resetMsg();
 
-		} else if (!ret){
-			printf("no message from child %d\n", i);
+			//printf("[Parent]: Message is \"%s\"\n", message);
+			idleChildCount++;
+			childPool[i].m_pid = 0;
+			if (!strcmp(message, "available 1")){
+				killCount++;
+		}
+
+	}
+}
+
+void rescanProcs(){
+	int pid = -1;
+	int *pidList;
+	int pidCount;
+	char pidString[100];
+	char procToKill[MAX_PROC_NAME];
+	int _c2p[2];
+	int _p2c[2];
+
+	// check each process in config file
+	for(int i = 0; i < procCount; i++){
+		char message[100];		/* message to output to logfile */
+
+		strcpy(procToKill, monitorProcs[i].name);
+		sleepTime = monitorProcs[i].sleep;
+
+		// get list of PIDs with the process name
+		pidList = getPidList(monitorProcs[i].name, &pidCount);
+
+		switch(pidCount){
+		// no procceses found with that name
+		case 0:
+			strcpy(message,"Info: No '");
+			strcat(message, monitorProcs[i].name);
+			strcat(message, "' processes found.\n");
+			timestamp(message);
+			pid = -1;
+			break;
+		// 1 process found with that name
+		case 1:
+			if (processMonitored(pidList[0])){
+				break;
+			}
+
+			sprintf(pidString, "%d", pidList[0]);
+
+			// setup the message to send
+			char writeStr[100];
+			strcpy(writeStr, "monitor ");
+			strcat(writeStr, monitorProcs[i].name);
+			strcat(writeStr, " ");
+			strcat(writeStr, pidString);
+			strcat(writeStr, " ");
+			char sleepStr[10];
+			sprintf(sleepStr, "%d", sleepTime);
+			strcat(writeStr, sleepStr);
+
+			//reuse idle child, or fork off new one
+			if (idleChildCount > 0){
+				idleChildCount--;
+				int idleIndex = getIdleChildIndex();
+
+				msg = init_message(writeStr);
+				write_message(childPool[idleIndex].p2c[1],msg);
+				resetMsg();
+			} else {
+				childCount = childCount + 1;
+				childPool = realloc(childPool, childCount*sizeof(child));
+
+				pipe(childPool[childCount-1].p2c);
+				pipe(childPool[childCount-1].c2p);
+				_c2p[0] = childPool[childCount-1].c2p[0];
+				_c2p[1] = childPool[childCount-1].c2p[1];
+				_p2c[0] = childPool[childCount-1].p2c[0];
+				_p2c[1] = childPool[childCount-1].p2c[1];
+
+				pid = fork();
+
+				if (pid == 0){
+					break;
+				} else if (pid > 0){
+					childPool[childCount-1].m_pid = pidList[0];
+					childPool[childCount-1].childId = childCount-1;
+
+					msg = init_message(writeStr);
+					write_message(childPool[childCount-1].p2c[1],msg);
+					resetMsg();
+				}
+			}
+			break;
+		// more than one process with that name
+		default:
+			// for each PID associated with the proccess
+			for(int j = 0; j < pidCount; j++){
+				//break if it is already monitored
+				if (processMonitored(pidList[j])){
+					break;
+				}
+
+				// setup the message to send
+				sprintf(pidString, "%d", pidList[j]);
+				char writeStr[100];
+				strcpy(writeStr, "monitor ");
+				strcat(writeStr, monitorProcs[i].name);
+				strcat(writeStr, " ");
+				strcat(writeStr, pidString);
+				strcat(writeStr, " ");
+				char sleepStr[10];
+				sprintf(sleepStr, "%d", sleepTime);
+				strcat(writeStr, sleepStr);
+
+				//reuse idle child, or fork off new one
+				if (idleChildCount > 0){
+					idleChildCount--;
+					int idleIndex = getIdleChildIndex();
+
+					msg = init_message(writeStr);
+					write_message(childPool[idleIndex].p2c[1],msg);
+					resetMsg();
+				} else {
+					childCount = childCount + 1;
+					childPool = realloc(childPool, childCount*sizeof(child));
+
+					pipe(childPool[childCount-1].p2c);
+					pipe(childPool[childCount-1].c2p);
+					_c2p[0] = childPool[childCount-1].c2p[0];
+					_c2p[1] = childPool[childCount-1].c2p[1];
+					_p2c[0] = childPool[childCount-1].p2c[0];
+					_p2c[1] = childPool[childCount-1].p2c[1];
+
+					pid = fork();
+
+					if(pid == 0){
+						break;
+					} else if(pid > 0){
+						childPool[childCount-1].m_pid = pidList[j];
+						childPool[childCount-1].childId = childCount-1;
+
+						msg = init_message(writeStr);
+						write_message(childPool[childCount-1].p2c[1],msg);
+						resetMsg();
+					}
+				}
+			}
+			break;
+		}
+
+		free(pidList);
+
+		// if child, run the child code
+		if(pid == 0){
+			childExec(_c2p, _p2c);
 		}
 	}
 }
 
+//returns the index of the first idle child it finds
+int getIdleChildIndex(){
+	for (int i = 0; i < childCount; i++){
+		if (childPool[i].m_pid == 0){
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+//returns 1 if the process pid is already being monitored
+int processMonitored(int pid){
+	for (int i = 0; i < childCount; i++){
+		if (childPool[i].m_pid == pid){
+			return 1;
+		}
+	}
+
+	return 0;
+}
 void oldParentFinish(child* childPool){
 	int *status = malloc(childCount * sizeof(int));
 
 	/* wait for all children, save their status to status[i]*/
 	for(int i = 0; i< childCount; i++){
-		waitpid(childPool[i].pid,&status[i],0);
+		/* deprecated */
+		//waitpid(childPool[i].pid,&status[i],0);
 	}
 
     /* count how many children returned 1 (killed a process) */
