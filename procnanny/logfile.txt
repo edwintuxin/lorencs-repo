@@ -1,4 +1,4 @@
-[Tue Mar  6 23:41:41 MST 2012] Info: No 'a.out' processes found.
-[Tue Mar  6 23:41:41 MST 2012] Info: No 'prog2' processes found.
-[Tue Mar  6 23:41:41 MST 2012] Info: No 'elm' processes found.
-[Tue Mar  6 23:41:41 MST 2012] Info: Exiting. 0 process(es) killed.
+[Wed Mar  7 12:52:51 MST 2012] Action: Cleaned up 1 previous 'procnanny' process(es).
+[Wed Mar  7 12:52:51 MST 2012] Info: No 'a.out' processes found.
+[Wed Mar  7 12:52:51 MST 2012] Info: No 'prog2' processes found.
+[Wed Mar  7 12:52:51 MST 2012] Info: No 'elm' processes found.

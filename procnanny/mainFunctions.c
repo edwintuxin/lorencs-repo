@@ -11,6 +11,7 @@ extern procs monitorProcs[128];
 extern int childCount;
 extern child *childPool;
 extern struct pipeMessage* msg;
+extern killcount;
 
 //reads the config file and stores the info from it
 void readFile(char* config){
@@ -42,7 +43,7 @@ void readFile(char* config){
 			timestamp(message);
 
 			procCount = lineCount;
-			cleanup(NULL, NULL);
+			cleanup(NULL);
 			exit(0);
 		}
 
@@ -191,12 +192,10 @@ void initChildren(int *pid, int *child_pipes){
 
 				msg = init_message(writeStr);
 				write_message(childPool[childCount-1].fd[1],msg);
-				free(msg->body);
-				free(msg);
+				resetMsg();
 				msg = init_message("exit");
 				write_message(childPool[childCount-1].fd[1],msg);
-				free(msg->body);
-				free(msg);
+				resetMsg();
 			}
 			break;
 		// more than one process with that name
@@ -233,12 +232,11 @@ void initChildren(int *pid, int *child_pipes){
 
 					msg = init_message(writeStr);
 					write_message(childPool[childCount-1].fd[1],msg);
-					free(msg->body);
-					free(msg);
+					resetMsg();
+
 					msg = init_message("exit");
 					write_message(childPool[childCount-1].fd[1],msg);
-					free(msg->body);
-					free(msg);
+					resetMsg();
 				}
 			}
 			break;
@@ -293,30 +291,40 @@ int* getPidList(char* procName,int *arraySize){
 	return pidList;
 }
 
-//take string input, timestampt it and print to logfile and stdout
-void timestamp(char* input){
-	FILE* fp = popen("date", "r");
-	if (fp == NULL) {
-		fprintf(stderr, "Failed to run command\n");
-		exit(0);
+// parent rechecks for new processes to monitor every 5 secs
+void parentLoop(){
+	while(1){
+		sleep(5);				/* sleep 5 seconds */
+		readChildMessages();	/* check if any children have left messages and process them */
+		printf("5 secs!\n");
 	}
-
-	char line[30];
-	fgets(line, 128, fp);
-	pclose(fp);
-
-	char output[1000] = "[";
-	strcat(output, line);
-	output[29] = '\0';
-	strcat(output, "] ");
-	strcat(output, input);
-	printf(output);
-	fprintf(logfile, output);
-	fflush(logfile);
 }
 
-// parent waits for children and prints closing remarks to logfile
-void parentFinish(child* childPool){
+void readChildMessages(){
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+
+	maxdesc = getdtablesize();
+	FD_ZERO(&read_from);
+
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	for (int i = 0; i < childCount; i++){
+		FD_SET(childPool[childCount-1].fd[0], &read_from);
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		if(ret){
+			printf("child %d has sent a message!\n", i);
+
+		} else if (!ret){
+			printf("no message from child %d\n", i);
+		}
+	}
+}
+
+void oldParentFinish(child* childPool){
 	int *status = malloc(childCount * sizeof(int));
 
 	/* wait for all children, save their status to status[i]*/
@@ -341,11 +349,34 @@ void parentFinish(child* childPool){
 	strcat(message, " process(es) killed.\n");
 	timestamp(message);
 
-    cleanup(childPool, status);
+    cleanup(status);
+}
+
+
+//take string input, timestampt it and print to logfile and stdout
+void timestamp(char* input){
+	FILE* fp = popen("date", "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command\n");
+		exit(0);
+	}
+
+	char line[30];
+	fgets(line, 128, fp);
+	pclose(fp);
+
+	char output[1000] = "[";
+	strcat(output, line);
+	output[29] = '\0';
+	strcat(output, "] ");
+	strcat(output, input);
+	printf(output);
+	fprintf(logfile, output);
+	fflush(logfile);
 }
 
 // cleans up allocated memory and file pointers
-void cleanup(child *childPool, int *status){
+void cleanup(int *status){
 	if (childPool != NULL){
 		free(childPool);
 	}
@@ -359,4 +390,10 @@ void cleanup(child *childPool, int *status){
 		free(status);
 	}
 	fclose(logfile);
+}
+
+void resetMsg(){
+	free(msg->body);
+	free(msg);
+	msg = NULL;
 }

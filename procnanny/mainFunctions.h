@@ -20,7 +20,7 @@
 
 #define MAX_PROC_NAME 128
 #define MAX_USER_NAME 15
-//#define SIGKILL 2
+#define SIGKILL 2
 
 #ifndef MAINFUNCTIONS_H_
 #define MAINFUNCTIONS_H_
@@ -34,10 +34,10 @@ typedef struct {
 } procs;
 
 typedef struct {
-	int childId;
-	int pid;
-	int fd[2];
-	int busy;
+	int childId;		/* index of the child starting from 0 */
+	int pid;			/* process ID of the process the child is monitoring (0 if idle) */
+	int fd[2];			/* pipes to communicate between parent and child */
+	int busy;			/* 1 if child is monitoring, 0 if child is idle */
 } child;
 
 void readFile(char* config);
@@ -45,10 +45,13 @@ void killPrevious(int parentID);
 void killProcess(char* procName);
 void timestamp(char* input);
 int* getPidList(char* procName, int *arraySize);
-void cleanup(child *childPool, int *status);
+void cleanup(int *status);
 void initChildren(int *pid, int *child_pipes);
-void parentFinish(child* childPool);
+void parentLoop();
+void readChildMessages();
+void oldparentFinish(child* childPool);
 int exists(char* line, int arraySize);
+void resetMsg();
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);
