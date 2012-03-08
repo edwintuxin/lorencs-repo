@@ -19,11 +19,15 @@ procs monitorProcs[128];		/* array of structs */
 child *childPool;				/* pool of all children */
 int poolSize;					/* size of currently malloced pool */
 int childCount;					/* current count of children in pool */
+int idleChildCount;				/* count of any idle children */
 struct pipeMessage* msg;		/* pointer for the pipe messages */
+int killCount;					/* kill count that parent keeps track of */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
-	childCount = 0;				/* count of children */
+	childCount = 0;
+	idleChildCount = 0;
+	killcount = 0;
 	int child_pipes[2];			/* the set of pipes that will be passed to each child */
 
 	if (argc != 2){
@@ -40,11 +44,12 @@ int main(int argc, char* argv[]) {
     initChildren(&pid, child_pipes);
 
     if(pid == 0){
-    	childExec(childPool,childCount, child_pipes); 	// child code
+    	childExec(child_pipes); 	// child code
     }
 
-    // parent code (child has exited by now)
-    parentFinish(childPool);
+    // parent loops forever until it is sent SIGINT
+    //oldParentFinish();
+    parentLoop();
 
     return (EXIT_SUCCESS);
 }

@@ -11,41 +11,38 @@
 #include "memwatch.h"
 #include "child.h"
 
-/* global vars from main */
 struct pipeMessage* msg;
-extern FILE *logfile;					/* pointer to log file*/
-int retval;								/* child's return value */
+int msgVal;								/* child's return value */
 
-void childExec(child *childPool, int childId, int *child_pipes){
+void childExec(int *child_pipes){
 	while(1){
 
 		char message[256];
 		memset(message, 0, 256);
 		msg = read_message(child_pipes[0]);
 		strcpy(message, msg->body);
-		free(msg->body);
-		free(msg);
+		resetMsg();
 
 		if (!strcmp(message, "exit")){
-			childExit(childPool);
+			childExit();
 		} else {
 			char procToKill[MAX_PROC_NAME];
 			char pidToKill[20];
 			int sleepTime;
 
 			sscanf(message, "%s %s %d", procToKill, pidToKill, &sleepTime);
-			monitorProcess(procToKill, pidToKill, sleepTime);
+			monitorProcess(procToKill, pidToKill, sleepTime, child_pipes);
 		}
 
 	}
 }
 
-void childExit(child *childPool){
-	cleanup(childPool, NULL);
-	exit(retval);
+void childExit(){
+	cleanup(NULL);
+	exit(1);
 }
 
-void monitorProcess(char *procToKill, char *pidToKill, int sleepTime){
+void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *child_pipes){
 	int killResult;		/* boolean to hold the return value of the kill funct */
 	int *pidList;
 	int pidCount;
@@ -77,7 +74,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime){
 		strcat(output, string);
 		strcat(output, " seconds.\n");
 		timestamp(output);
-		retval = 0;
+		msgVal = 0;
 	} else {
 		int pidToKillInt;
 		sscanf(pidToKill, "%d", &pidToKillInt);
@@ -94,7 +91,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime){
 			sprintf(string, "%d", sleepTime);
 			strcat(output, string);
 			strcat(output, " seconds.\n");
-			retval = 1;
+			msgVal = 1;
 		// if kill unsuccessful, print fail message
 		} else if (killResult == -1){
 			strcpy(output, "Error: Unable to kill PID ");
@@ -102,10 +99,20 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime){
 			strcat(output, " (");
 			strcat(output, procToKill);
 			strcat(output, ").\n");
-			retval = 0;
+			msgVal = 0;
 		}
 		timestamp(output);
 	}
+
+	// send message to parent that child is available, followed by
+	// integer indicating if kill occurred or not
+	char msgStr[20] = "available ";
+	char msgValStr[5];
+	sprintf(msgValStr, "%d", msgVal);
+	strcat(msgStr, msgValStr);
+	msg = init_message(msgStr);
+	write_message(child_pipes[1],msg);
+	resetMsg();
 
 	free(pidList);
 }
