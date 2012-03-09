@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <setjmp.h>
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
@@ -35,25 +36,26 @@ typedef struct {
 } procs;
 
 typedef struct {
-	int childId;		/* index of the child starting from 0 */
 	int m_pid;			/* process ID of the process the child is monitoring (0 if idle) */
 	int p2c[2];			/* pipes to communicate from parent to child */
 	int c2p[2];			/* pipes to communicate from child to parent */
 } child;
 
-void readFile(char* config);
+void readFile();
 void killPrevious(int parentID);
 void killProcess(char* procName);
 void timestamp(char* input);
 int* getPidList(char* procName, int *arraySize);
-void cleanup(int *status);
+void cleanup();
 void initChildren(int *pid, int *c2p, int *p2c);
 void parentLoop();
 void readChildMessages();
 void rescanProcs();
 int getIdleChildIndex();
 int processMonitored(int pid);
-void oldparentFinish(child* childPool);
+void signalHandler(int signalNum);
+void setHandler(int sigType, void* handler, int i);
+void waitForChildren();
 int exists(char* line, int arraySize);
 void resetMsg();
 

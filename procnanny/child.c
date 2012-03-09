@@ -15,6 +15,10 @@ struct pipeMessage* msg;
 int msgVal;								/* child's return value */
 
 void childExec(int *c2p, int *p2c){
+	// ignore interrupts and sighups as the parent should handle those
+	signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
+
 	while(1){
 
 		char message[256];
@@ -25,7 +29,7 @@ void childExec(int *c2p, int *p2c){
 
 		//printf("message is: %s\n", message);
 		if (!strcmp(message, "exit")){
-			childExit();
+			childExit(c2p);
 		} else if (!strncmp(message, "monitor", 7)){
 			char procToKill[MAX_PROC_NAME];
 			char pidToKill[20];
@@ -38,9 +42,14 @@ void childExec(int *c2p, int *p2c){
 	}
 }
 
-void childExit(){
+// cleanup and inform parent that chidl is exiting
+void childExit(int *c2p){
+	msg = init_message("exit complete");
+	write_message(c2p[1],msg);
+	resetMsg();
 	cleanup(NULL);
-	exit(1);
+
+	exit(EXIT_SUCCESS);
 }
 
 void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, int *p2c){
