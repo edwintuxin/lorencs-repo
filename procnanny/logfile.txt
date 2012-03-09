@@ -1,26 +1,32 @@
-[Thu Mar  8 17:49:07 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:07 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:07 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:12 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:12 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:12 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:17 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 31661).
-[Thu Mar  8 17:49:17 MST 2012] Info: Initializing monitoring of process 'elm' (PID 31663).
-[Thu Mar  8 17:49:17 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 31662).
-[Thu Mar  8 17:49:27 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:27 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:27 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:28 MST 2012] Info: PID 31661 (a.out) has exited before exceeding 11 seconds.
-[Thu Mar  8 17:49:28 MST 2012] Info: PID 31663 (elm) has exited before exceeding 11 seconds.
-[Thu Mar  8 17:49:28 MST 2012] Info: PID 31662 (prog2) has exited before exceeding 11 seconds.
-[Thu Mar  8 17:49:32 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:32 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:32 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:34 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
-[Thu Mar  8 17:49:34 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:34 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:34 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:39 MST 2012] Info: No 'a.out' processes found.
-[Thu Mar  8 17:49:39 MST 2012] Info: No 'elm' processes found.
-[Thu Mar  8 17:49:39 MST 2012] Info: No 'prog2' processes found.
-[Thu Mar  8 17:49:43 MST 2012] Info: Caught SIGINT. Exiting cleanly. 0 process(es) killed.
+[Thu Mar  8 18:21:31 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:31 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:31 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:36 MST 2012] Info: Initializing monitoring of process 'a.out' (PID 32043).
+[Thu Mar  8 18:21:36 MST 2012] Info: Initializing monitoring of process 'elm' (PID 32045).
+[Thu Mar  8 18:21:36 MST 2012] Info: Initializing monitoring of process 'prog2' (PID 32044).
+[Thu Mar  8 18:21:42 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:44 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:47 MST 2012] Info: PID 32043 (a.out) has exited before exceeding 11 seconds.
+[Thu Mar  8 18:21:47 MST 2012] Info: PID 32045 (elm) has exited before exceeding 11 seconds.
+[Thu Mar  8 18:21:47 MST 2012] Info: PID 32044 (prog2) has exited before exceeding 11 seconds.
+[Thu Mar  8 18:21:48 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:48 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:48 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'a.out' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'elm' processes found.
+[Thu Mar  8 18:21:49 MST 2012] Info: No 'prog2' processes found.
+[Thu Mar  8 18:21:53 MST 2012] Info: Caught SIGINT. Exiting cleanly. 0 process(es) killed.

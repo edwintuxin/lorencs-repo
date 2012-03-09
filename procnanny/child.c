@@ -64,7 +64,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 	strcat(output, "' (PID ");
 	strcat(output, pidToKill);
 	strcat(output, ").\n");
-	timestamp(output);
+	timestamp(output, 0);
 
 	//go to sleep
 	sleep(sleepTime);
@@ -83,7 +83,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 		sprintf(string, "%d", sleepTime);
 		strcat(output, string);
 		strcat(output, " seconds.\n");
-		timestamp(output);
+		timestamp(output, 0);
 		msgVal = 0;
 	} else {
 		int pidToKillInt;
@@ -111,7 +111,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 			strcat(output, ").\n");
 			msgVal = 0;
 		}
-		timestamp(output);
+		timestamp(output, 0);
 	}
 
 	// send message to parent that child is available, followed by
