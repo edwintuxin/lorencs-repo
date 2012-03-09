@@ -40,7 +40,7 @@ void readFile(){
 		if (!strcmp(name, "procnanny")){
 			strcpy(message, "Warning: You are attempting to monitor the "
 					"'procnanny' process. Exiting to avoid unexpected behavior.\n");
-			timestamp(message);
+			timestamp(message, 1);
 
 			procCount = lineCount;
 			cleanup(NULL);
@@ -54,7 +54,7 @@ void readFile(){
 			strcpy(message, "Warning: Ignoring duplicate process '");
 			strcat(message, name);
 			strcat(message, "' in the .config file.\n");
-			timestamp(message);
+			timestamp(message, 0);
 			continue;
 		}
 
@@ -112,7 +112,7 @@ void killPrevious(int parentID){
 		strcat(output, kc);
 	}
 	strcat(output, " previous 'procnanny' process(es).\n");
-	timestamp(output);
+	timestamp(output, 0);
 
 	free(pidList);
 }
@@ -146,7 +146,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			timestamp(message);
+			timestamp(message, 0);
 			*pid = -1;
 			break;
 		// 1 process found with that name
@@ -311,8 +311,8 @@ void readChildMessages(){
 			strcpy(message, msg->body);
 			resetMsg();
 
-			//printf("[Parent]: Message is \"%s\"\n", message);
-
+			// increment idle child count and set the child's m_pid to 0
+			// if message was "available 1", also increment kill count
 			if (!strcmp(message, "available 1")){
 				idleChildCount++;
 				childPool[i].m_pid = 0;
@@ -326,8 +326,10 @@ void readChildMessages(){
 	}
 }
 
+// similar to initializeChildren()
+// assigns existing or new children to the approriate processes to monitor
 void rescanProcs(){
-		// check each process in config file
+	// for each process in config file
 	for(int i = 0; i < procCount; i++){
 		int pid = -1;
 		int pidCount;
@@ -348,21 +350,23 @@ void rescanProcs(){
 		switch(pidCount){
 		// no procceses found with that name
 		case 0:
+			//print "no process found" message
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			timestamp(message);
+			timestamp(message, 0);
 			pid = -1;
 			break;
 		// 1 process found with that name
 		case 1:
+			// if process is being monitored, break
 			if (processMonitored(pidList[0])){
 				break;
 			}
 
 			sprintf(pidString, "%d", pidList[0]);
 
-			// setup the message to send
+			// setup the message to send to child
 			char writeStr[100];
 			strcpy(writeStr, "monitor ");
 			strcat(writeStr, monitorProcs[i].name);
@@ -380,13 +384,16 @@ void rescanProcs(){
 
 				childPool[idleIndex].m_pid = pidList[0];
 
+				// send message to idle child
 				msg = init_message(writeStr);
 				write_message(childPool[idleIndex].p2c[1],msg);
 				resetMsg();
 			} else {
+				// allocate space for a new child in the struct
 				childCount++;
 				childPool = realloc(childPool, childCount*sizeof(child));
 
+				// setup pipes
 				pipe(childPool[childCount-1].p2c);
 				pipe(childPool[childCount-1].c2p);
 				_c2p[0] = childPool[childCount-1].c2p[0];
@@ -482,10 +489,11 @@ int getIdleChildIndex(){
 		}
 	}
 
+	// -1 if no idle child found
 	return -1;
 }
 
-//returns 1 if the process pid is already being monitored
+//returns 1 if the process pid is already being monitored; 0 otherwise
 int processMonitored(int pid){
 	for (int i = 0; i < childCount; i++){
 		if (childPool[i].m_pid == pid){
@@ -496,25 +504,27 @@ int processMonitored(int pid){
 	return 0;
 }
 
-
+// handles the SIGINT and SIGHUP signals
 void signalHandler(int signalNum) {
 	if (signalNum == SIGINT){
-		// send exit message to children
+		// send exit message to all children
 		for (int i = 0; i < childCount; i++){
 			msg = init_message("exit");
 			write_message(childPool[i].p2c[1],msg);
 			resetMsg();
 		}
 
+		// wait for the children to send their kill messages ("available")
+		// and their "exit complete" messages
 		waitForChildren();
 
-		/* print final message */
+		// print final message
 		char kc[10];
 		char message[100] = "Info: Caught SIGINT. Exiting cleanly. ";
 		sprintf(kc,"%d",killCount);
 		strcat(message, kc);
 		strcat(message, " process(es) killed.\n");
-		timestamp(message);
+		timestamp(message, 1);
 
 		cleanup();
 		exit(EXIT_SUCCESS);
@@ -526,7 +536,7 @@ void signalHandler(int signalNum) {
 		strcpy(message, "Info: Caught SIGHUP. Configuration file '");
 		strcat(message, configPath);
 		strcat(message, "' re-read.\n");
-		timestamp(message);
+		timestamp(message, 1);
 	}
 }
 
@@ -541,17 +551,21 @@ void waitForChildren(){
 	tv.tv_usec = 0;
 
 	int exited = 0; 	/* count of exited children */
+	// while not all children have "exit completed"
 	while (exited < childCount){
 		for (int i = 0; i < childCount; i++){
 			FD_ZERO(&read_from);
 			FD_SET(childPool[i].c2p[0], &read_from);
 
+			// check if child send message
 			ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
 			// read message
 			if(ret){
 				char message[256];
 				memset(message, 0, 256);
+
+				// read message
 				msg = read_message(childPool[i].c2p[0]);
 				strcpy(message, msg->body);
 				resetMsg();
@@ -564,6 +578,7 @@ void waitForChildren(){
 				} else if (!strcmp(message, "available 0")){
 					idleChildCount++;
 					childPool[i].m_pid = 0;
+				// if child has exited, increment the exited count
 				} else if (!strcmp(message, "exit complete")){
 					exited++;
 				}
@@ -572,9 +587,8 @@ void waitForChildren(){
 	}
 }
 
+// sets the handler '*handler' to handle the 'sigType' signal
 void setHandler(int sigType, void* handler, int i) {
-
-
 	newAction[i] = malloc(sizeof(struct sigaction));
 	newAction[i]->sa_handler = (handler);
 	sigemptyset(&newAction[i]->sa_mask);
@@ -599,8 +613,9 @@ int exists(char* line, int arraySize){
 	return returnVal;
 }
 
-// take string input, timestampt it and print to logfile and stdout
-void timestamp(char* input){
+// take string input, timestamps it and print to logfile
+// if p2stdout is 1, also prints to stdout
+void timestamp(char* input, int p2stdout){
 	FILE* fp = popen("date", "r");
 	if (fp == NULL) {
 		fprintf(stderr, "Failed to run command\n");
@@ -616,14 +631,14 @@ void timestamp(char* input){
 	output[29] = '\0';
 	strcat(output, "] ");
 	strcat(output, input);
-	//if (p2stdout){
+	if (p2stdout){
 		printf(output);
-	//}
+	}
 	fprintf(logfile, output);
 	fflush(logfile);
 }
 
-// cleans up allocated memory and file pointers
+// cleans up allocated memory, file pointers, and pipes
 void cleanup(){
 	if (childPool != NULL){
 		free(childPool);
@@ -647,6 +662,8 @@ void cleanup(){
 	}
 }
 
+// free memory allocated for the message and set it to NULL
+// so that the msg pointer can be reused many times by a process
 void resetMsg(){
 	free(msg->body);
 	free(msg);

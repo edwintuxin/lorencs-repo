@@ -35,4 +35,4 @@ clean:
 	-rm -f *.o *.log memwatch core
    
 tar:
-	tar cvf submit.tar main.c mainFunctions.c mainFunctions.h child.c child.h pipeMessage.c pipeMessage.h memwatch.c memwatch.h README report.html Makefile        
+	tar cvf submit.tar main.c mainFunctions.c mainFunctions.h child.c child.h pipeMessage.c pipeMessage.h README report.html Makefile        
