@@ -1,48 +1,58 @@
-CMPUT 379 - Assignment 1 Report
+= CMPUT 379 - Assignment 2 Report
 
 
+==== Overview:
 
-Overview:
-
-
-	My implementation of this program uses a structured approach. The execution starts in the 'main' file of the program, which simply calls on functions of other files to perform the required duties of the program. There are three source file to the program: 'main', 'mainFunctions', and 'child'. The 'mainFunctions' file contains the majority of the functions used in the execution of the program. The 'child' file contains the code that is exclusively executed by the children during their run. 
+The implementation of this assignment follows the same structure as the first assignment, with the required design changes applied. The execution starts in the 'main' file of the program, which simply calls on functions of other files to perform the required duties of the program. There are four source files to the program: 'main', 'mainFunctions', 'child', and 'pipeMessages'. The 'mainFunctions' file contains the majority of the functions used in the execution of the program. The 'child' file contains the code that is exclusively executed by the children during their run. The 'pipeMessages' file contains code that is used for to work with the messages that are sent over the UNIX pipes.
 	
 
-Design and Implementation:
+==== Design and Implementation:
 
+===== Parent
+The parent begins by setting up the signal handlers for SIGINT and SIGHUP. It then performs similar tasks as in the previous assignment (readFile() to read the config file, killPrevious() to kill any pre-existing procnannys, and initChildren() to initialize children according to the config file at the start), but instead of calling a function to wait for the children to finish, the parent calls parentLoop() which loops forever. In this loop it sleeps for 5 seconds, then checks and processes any messages from children (more on messages below). It then uses rescanProcs() to rescan the existing processes and assigns new or reassign existing children to monitor any processes that aren't already being monitored.
+Upon catching a SIGINT, the parent sends an "exit" message to each child, and waits for every child to send back a "exit complete" acknowledgement. During this time it also accepts kill confirmations. This follows the class discussion of the parent using messages to kill children and waiting for the children to finish their monitoring before exiting.
+Upon catching a SIGHUP, the parent simply call the readFile() function again.
 
-	The parent process begins by calling the readFile() function, which reads the configuration file and verifies that it exists and is properly formatted. I used a dynamically allocated array of strings (2D array of chars) to store the process names to be monitored. This can be later expanded into an array of structs if future assignments require a separate timer for each process name.
-	The parent then checks for previous copies of the 'procnanny' process with killPrevious(). This function uses getPidList() to obtain a (dynamically allocated) array of PIDs that correspond to the 'procnanny' process and attempts to kill them. It confirms the kill and prints an "Info" message to the log. 
-	Next, the parent calls the initChildren() function, which forks off all the children and returns a list of PIDs (childpid) of all the children it created. This function itterates through the proccessNames array and for each name in the array, it obtains a list of PIDs corresponding to that name (using the getPidList() function mentioned earlier). If no PIDs are found, it reports it, and does not monitor that process. If there is 1 or more found, it properly reallocates memory for the childpid array and forks off a child for each PID.
-	The children then run the code inside the 'child.c' file. After sleeping for the specified time, they use the famous getPidList() function to obtain a list of PIDs corresponding to the PID they were supposed to monitor. In this case, the function only returns either an empty list, or a list of that one PID. If no PID is found, the child reports that the process exited on its own, clens up and exits. Else, it kills the process, reports to the log, and exits.
-	After all the children have been created, the parent resumes in the parentFinish() function. It waits for all the children and records their exit statuses with waitpid(). It then reports the killcount, cleans up, and exits. 
+===== Children
+The children behave almost the same way as before, but their previous function of monitoring a process is wrapped into a function. The main exectuion of the child loops forever, blocking on the read end of the parent-to-child pipe. Once the child reads a "monitor" message, it begins to monitor the deisgnated process and then waits for more messages.
 
-	The timestamp() function timestampts a string that it is passed, and prints the message to the logfile.
-	The getPidList() function executes a command similar to "ps -u USER | grep PROCNAME" and reads the output of the command line by line.
+===== Messages
+The messages are implemented using slightly modified code from lab 6. They are implemented simply as text messages which the parent and children parse. The messages that parent sends to child are:
 
+* "monitor procName pid sleepTime"
+  - "monitor" is just a keyword, the other three are variables with obvious meaning
+* "exit"
+  - tells the child to clean up and exit
 
-Testing:
+The child can send the following messages:
 
+* "available 0" or "available 1"
+  - tells the parent that the child is finished monitoring and is available
+  - 1 indicates succesfull kill, 0 indicates no kill
+* "exit complete"
+  - tells the parent that the child has completed exiting
 
-	For testing, I compiled a short list of various test scenarios, most of which I came up with during development as I noticed particualar cases. These cases are:
+===== Child Pool
+
+The child pool is an array of typedef structs of "child", which is a struct that has the following elements:
+
+* m_id
+  - if child is monitoring a process this is the pid of the monitored process; otherwise it is 0
+* p2c[2]
+  - set of pipes for parent to child communication
+* c2p[2]
+  - set of pipes for child to parent communication
+
+==== Testing:
 	
-	- running a procces (for ex. "test.out") when the .config file specifies "test"
-		- "test.out" is not expected to be monitored
-	- specifying an invalid path to a .config file
-	- having a string on the first line of the .config file
-	- including a process name twice in the config file
-		- ignores the process name the second time (otherwise different child processes will be monitoring the same process)
-	- including 'procnanny' in the list of processes to monitor
-		- warning is printed and execution is stopped
-		- unsafe to kill the parent before it release memory, etc.
-	- specifying a wait time of '0' in .config file
-		- initilly suspected to cause race conditions, but the program ran as expected for extended trials
-	- used a script to run 1129 instances of various processes (all executing a while(1) loop) to be monitored
-		- this grinds the CPU to a halt, but eventually the program was able to properly kill all the processes it monitored, albeit after a wait time much longer than specified (due to an overburdened CPU)
-		- this test actually helped me locate an obsucre bug where after forking 205 children, a Segmentation Fault occured (due to allocating memory for an int array instead of a pid_t array)
+I reran most of the scenarios from the previous assignment. New scenarios are:
 
+* sending SIGINT to parent again while the parent is waiting for the children to finish exiting
+* have some different processes (to be monitored) that exit after 6 seconds; monitor some of them for 4 seconds, the others for 8 seconds; after aproximately 6 seconds, rerun the script that executes more processes to monitor
+  - this tests many things such as the child reporting processes exiting early, the parent properly processing children that have finished monitoring, and reassigning them to new processes to monitor, as well as forking off new children when there are not enough idle processes
+* while the children are monitoring some process, add a process to monitor to config file, run new instances of the old processes and the new process, send SIGHUP to parent
+  - tests the functionality of the rescanProcs() function as well as the SIGHUP signal handler;
 
-Conclusion:
+==== Conclusion:
 	
-
-	I attempted to develop this program with the expansion of future assignments in mind. Splitting the execution of the program into various reusable functions and files will hopefully make future modifications simpler. I hope to have developed a useful extension to the linux environment by the end of the third assignment.
+As I expected, the modularity in the previous assignment allowed me to expand the functionality of hte program ot fit the specifications without too much trouble. I did not have to change the control flow of my program too much, besides handling signals.

@@ -303,116 +303,159 @@ div.exampleblock-content {
 /* IE6 sets dynamically generated links as visited. */
 div#toc a:visited { color: blue; }
 </style>
-<title></title>
+<title>CMPUT 379 - Assignment 2 Report</title>
 </head>
 <body>
 <div id="header">
+<h1>CMPUT 379 - Assignment 2 Report</h1>
 </div>
-<div class="para"><p>CMPUT 379 - Assignment 1 Report</p></div>
-<div class="para"><p>Overview:</p></div>
-<div class="literalblock">
-<div class="content">
-<pre><tt>My implementation of this program uses a structured approach. The execution starts in the 'main' file of the program, which simply calls on functions of other files to perform the required duties of the program. There are three source file to the program: 'main', 'mainFunctions', and 'child'. The 'mainFunctions' file contains the majority of the functions used in the execution of the program. The 'child' file contains the code that is exclusively executed by the children during their run.</tt></pre>
-</div></div>
-<div class="para"><p>Design and Implementation:</p></div>
-<div class="literalblock">
-<div class="content">
-<pre><tt>The parent process begins by calling the readFile() function, which reads the configuration file and verifies that it exists and is properly formatted. I used a dynamically allocated array of strings (2D array of chars) to store the process names to be monitored. This can be later expanded into an array of structs if future assignments require a separate timer for each process name.
-The parent then checks for previous copies of the 'procnanny' process with killPrevious(). This function uses getPidList() to obtain a (dynamically allocated) array of PIDs that correspond to the 'procnanny' process and attempts to kill them. It confirms the kill and prints an "Info" message to the log.
-Next, the parent calls the initChildren() function, which forks off all the children and returns a list of PIDs (childpid) of all the children it created. This function itterates through the proccessNames array and for each name in the array, it obtains a list of PIDs corresponding to that name (using the getPidList() function mentioned earlier). If no PIDs are found, it reports it, and does not monitor that process. If there is 1 or more found, it properly reallocates memory for the childpid array and forks off a child for each PID.
-The children then run the code inside the 'child.c' file. After sleeping for the specified time, they use the famous getPidList() function to obtain a list of PIDs corresponding to the PID they were supposed to monitor. In this case, the function only returns either an empty list, or a list of that one PID. If no PID is found, the child reports that the process exited on its own, clens up and exits. Else, it kills the process, reports to the log, and exits.
-After all the children have been created, the parent resumes in the parentFinish() function. It waits for all the children and records their exit statuses with waitpid(). It then reports the killcount, cleans up, and exits.</tt></pre>
-</div></div>
-<div class="literalblock">
-<div class="content">
-<pre><tt>The timestamp() function timestampts a string that it is passed, and prints the message to the logfile.
-The getPidList() function executes a command similar to "ps -u USER | grep PROCNAME" and reads the output of the command line by line.</tt></pre>
-</div></div>
-<div class="para"><p>Testing:</p></div>
-<div class="literalblock">
-<div class="content">
-<pre><tt>For testing, I compiled a short list of various test scenarios, most of which I came up with during development as I noticed particualar cases. These cases are:</tt></pre>
-</div></div>
+<h4 id="_overview">Overview:</h4>
+<div class="para"><p>The implementation of this assignment follows the same structure as the first assignment, with the required design changes applied. The execution starts in the <em>main</em> file of the program, which simply calls on functions of other files to perform the required duties of the program. There are four source files to the program: <em>main</em>, <em>mainFunctions</em>, <em>child</em>, and <em>pipeMessages</em>. The <em>mainFunctions</em> file contains the majority of the functions used in the execution of the program. The <em>child</em> file contains the code that is exclusively executed by the children during their run. The <em>pipeMessages</em> file contains code that is used for to work with the messages that are sent over the UNIX pipes.</p></div>
+<h4 id="_design_and_implementation">Design and Implementation:</h4>
+<h5 id="_parent">Parent</h5>
+<div class="para"><p>The parent begins by setting up the signal handlers for SIGINT and SIGHUP. It then performs similar tasks as in the previous assignment (readFile() to read the config file, killPrevious() to kill any pre-existing procnannys, and initChildren() to initialize children according to the config file at the start), but instead of calling a function to wait for the children to finish, the parent calls parentLoop() which loops forever. In this loop it sleeps for 5 seconds, then checks and processes any messages from children (more on messages below). It then uses rescanProcs() to rescan the existing processes and assigns new or reassign existing children to monitor any processes that aren't already being monitored.
+Upon catching a SIGINT, the parent sends an "exit" message to each child, and waits for every child to send back a "exit complete" acknowledgement. During this time it also accepts kill confirmations. This follows the class discussion of the parent using messages to kill children and waiting for the children to finish their monitoring before exiting.
+Upon catching a SIGHUP, the parent simply call the readFile() function again.</p></div>
+<h5 id="_children">Children</h5>
+<div class="para"><p>The children behave almost the same way as before, but their previous function of monitoring a process is wrapped into a function. The main exectuion of the child loops forever, blocking on the read end of the parent-to-child pipe. Once the child reads a "monitor" message, it begins to monitor the deisgnated process and then waits for more messages.</p></div>
+<h5 id="_messages">Messages</h5>
+<div class="para"><p>The messages are implemented using slightly modified code from lab 6. They are implemented simply as text messages which the parent and children parse. The messages that parent sends to child are:</p></div>
 <div class="ilist"><ul>
 <li>
 <p>
-running a procces (for ex. "test.out") when the .config file specifies "test"
+"monitor procName pid sleepTime"
 </p>
-</li>
+<div class="ilist"><ul>
 <li>
 <p>
-"test.out" is not expected to be monitored
-</p>
-</li>
-<li>
-<p>
-specifying an invalid path to a .config file
-</p>
-</li>
-<li>
-<p>
-having a string on the first line of the .config file
-</p>
-</li>
-<li>
-<p>
-including a process name twice in the config file
-</p>
-</li>
-<li>
-<p>
-ignores the process name the second time (otherwise different child processes will be monitoring the same process)
-</p>
-</li>
-<li>
-<p>
-including <em>procnanny</em> in the list of processes to monitor
-</p>
-</li>
-<li>
-<p>
-warning is printed and execution is stopped
-</p>
-</li>
-<li>
-<p>
-unsafe to kill the parent before it release memory, etc.
-</p>
-</li>
-<li>
-<p>
-specifying a wait time of <em>0</em> in .config file
-</p>
-</li>
-<li>
-<p>
-initilly suspected to cause race conditions, but the program ran as expected for extended trials
-</p>
-</li>
-<li>
-<p>
-used a script to run 1129 instances of various processes (all executing a while(1) loop) to be monitored
-</p>
-</li>
-<li>
-<p>
-this grinds the CPU to a halt, but eventually the program was able to properly kill all the processes it monitored, albeit after a wait time much longer than specified (due to an overburdened CPU)
-</p>
-</li>
-<li>
-<p>
-this test actually helped me locate an obsucre bug where after forking 205 children, a Segmentation Fault occured (due to allocating memory for an int array instead of a pid_t array)
+"monitor" is just a keyword, the other three are variables with obvious meaning
 </p>
 </li>
 </ul></div>
-<div class="para"><p>Conclusion:</p></div>
-<div class="literalblock">
-<div class="content">
-<pre><tt>I attempted to develop this program with the expansion of future assignments in mind. Splitting the execution of the program into various reusable functions and files will hopefully make future modifications simpler. I hope to have developed a useful extension to the linux environment by the end of the third assignment.</tt></pre>
-</div></div>
+</li>
+<li>
+<p>
+"exit"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the child to clean up and exit
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<div class="para"><p>The child can send the following messages:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+"available 0" or "available 1"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the parent that the child is finished monitoring and is available
+</p>
+</li>
+<li>
+<p>
+1 indicates succesfull kill, 0 indicates no kill
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+"exit complete"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the parent that the child has completed exiting
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h5 id="_child_pool">Child Pool</h5>
+<div class="para"><p>The child pool is an array of typedef structs of "child", which is a struct that has the following elements:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+m_id
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+if child is monitoring a process this is the pid of the monitored process; otherwise it is 0
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+p2c[2]
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+set of pipes for parent to child communication
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+c2p[2]
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+set of pipes for child to parent communication
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h4 id="_testing">Testing:</h4>
+<div class="para"><p>I reran most of the scenarios from the previous assignment. New scenarios are:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+sending SIGINT to parent again while the parent is waiting for the children to finish exiting
+</p>
+</li>
+<li>
+<p>
+have some different processes (to be monitored) that exit after 6 seconds; monitor some of them for 4 seconds, the others for 8 seconds; after aproximately 6 seconds, rerun the script that executes more processes to monitor
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+this tests many things such as the child reporting processes exiting early, the parent properly processing children that have finished monitoring, and reassigning them to new processes to monitor, as well as forking off new children when there are not enough idle processes
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+while the children are monitoring some process, add a process to monitor to config file, run new instances of the old processes and the new process, send SIGHUP to parent
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tests the functionality of the rescanProcs() function as well as the SIGHUP signal handler;
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h4 id="_conclusion">Conclusion:</h4>
+<div class="para"><p>As I expected, the modularity in the previous assignment allowed me to expand the functionality of hte program ot fit the specifications without too much trouble. I did not have to change the control flow of my program too much, besides handling signals.</p></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2012-02-08 20:47:39 MDT
+Last updated 2012-03-08 17:56:21 MDT
 </div>
 </div>
 </body>
