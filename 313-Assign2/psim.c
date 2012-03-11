@@ -51,6 +51,9 @@ int main(int argc, char* argv[]){
 		runSim();
 
 		throughput[i] = frameTx/R;
+		for (int j = 0; j < N; j++){
+			Stations[j].throughput[i] = Stations[j].frameTx/R;
+		}
 	}
 
 	printStats(argc, argv);
