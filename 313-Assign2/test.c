@@ -22,7 +22,7 @@ int main(){
 	increaseDelay(first);
 	first = addFrame(first);
 
-	//first = deleteLast(first);
+	//deleteLast(first);
 
 	frameList *curr, *prev;
 	curr = first;
