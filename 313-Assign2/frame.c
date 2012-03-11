@@ -14,22 +14,26 @@
 frameList* addFrame(frameList *first){
 	frameList *newnode;
     newnode = malloc(sizeof(frameList));
-    newnode->frameDelay = 1;
+    newnode->frameDelay = 0;
     newnode->next = first;
     return newnode;
 }
 
 //deletes the first frame in the frameList
-frameList* deleteFrame (frameList *first){
+frameList* deleteLast (frameList *first){
     //find matrix
-	frameList *newfirst;
+	frameList *curr, *prev;
 
-    newfirst = first->next;
+	while( curr->next != NULL ){
+			prev = curr;
+			curr = curr->next;
+		}
 
+	prev->next = NULL;
     //free space occupied by the node
     free(first);
 
-    return newfirst;
+    return prev;
 }
 
 void increaseDelay(frameList *first){
