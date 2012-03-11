@@ -2,7 +2,7 @@
 # ONE Card number: 1227388
 # Unix id: lorencs
 
-#CFLAGS = -g -O0
+CFLAGS = -g
 
 psim: psim.o frame.o memwatch.o
 	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o psim psim.o frame.o memwatch.o -lm
@@ -29,9 +29,10 @@ clean:
 	-rm -f *.o test core
 	-rm -f *.o *.log memwatch core
 	
+
 runT:
-	./psim T 20 0.02 50000 5 1 2 3 4 5
+	./psim T 20 0.01 50000 5 1 2 3 4 5
 	
 runP:
-	./psim T 20 0.02 50000 5 1 2 3 4 5
+	./psim P 20 0.01 50000 5 1 2 3 4 5
 

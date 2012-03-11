@@ -5,7 +5,7 @@
  *      Author: Mik
  */
 #include "frame.h"
-
+int N = 20;
 
 int txNextSlot(){
 		double p = 1/(double)N;
@@ -16,17 +16,20 @@ int txNextSlot(){
 		return 0;
 	}
 
-int main(){
+int main(int argc, char * argv[]){
+	int seed;
+	sscanf(argv[1], "%d", &seed);
+	srand(seed);
 
-	int N = 20;
-
-
+	int txCount = 0;
 
 	for (int i = 0; i < 100; i++){
 		if (txNextSlot()){
-			printf("transmit\n");
-		} else {
-			printf("no transmit\n");
+			txCount++;
 		}
 	}
+
+	printf("txCount: %d\n", txCount);
+
+	return 0;
 }

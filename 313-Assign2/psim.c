@@ -25,9 +25,10 @@ int frameTx;				// # of successful transmissions (in one trial)
 
 // used in Protocol P
 int *currSlot;			// array of station ids want to transmit in the current slot
-int *nextSlot;				// array of station ids want to transmit in the next slot
+//int *nextSlot;				// array of station ids want to transmit in the next slot
 int currSize;				// how many stations want to transmit in current slot
-int nextSize;				// how many stations want to transmit in next slot
+//int nextSize;				// how many stations want to transmit in next slot
+int slot;
 
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
@@ -46,9 +47,8 @@ int main(int argc, char* argv[]){
 
 	Stations = malloc(N*sizeof(station));
 	currSlot = malloc(N*sizeof(int));
-	nextSlot = malloc(N*sizeof(int));
-	currSize = 0;
-	nextSize = 0;
+	//nextSlot = malloc(N*sizeof(int));
+	//nextSize = 0;
 
 	// run simulation T times
 	for (int i = 0; i < T; i++){
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
 		srand(t[i]);
 		initStations();
 		currSize = 0;
-		nextSize = 0;
+		//nextSize = 0;
 
 		runSim();
 
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
 
 
 void runSim(){
-	int slot = 0;		// count of how many slot times have elapsed
+	slot = 0;		// count of how many slot times have elapsed
 	int i = 0;			// int form 0 to N-1 showing which slot of the bus it is in
 	while (slot < R){
 		if (i == N){
@@ -102,28 +102,32 @@ void runSim(){
 				break;
 
 			case 'P':
-				copyNextToCurr();	// copy the stations from "nextSlot" to "currSlot"
+
+				currSize = 0;
 
 				for (int j = 0; j < N; j++){
-					// if station wants to transmit, and it isn't already wanting to transmit this slot
-					// and if it isn't trying to pick a slot to tx in, add it to list of stations wanting to transmit
-					if ((Stations[j].frameQ > 0) && (!isIn(j, currSlot, currSize)) && (!Stations[j].tryingToTx)){
+					// if station wants to transmit, and it hasn't already tried to previous transmit
+					// then add it to the list of stations currently wanting to transmit
+					if ((Stations[j].frameQ > 0) && (!Stations[j].tryingToTx)){
+						currSlot[currSize] = j;
+						currSize++;
+					}
+
+					//if the station has previously tried to transmit, add it with a prob of 1/N
+					if ((Stations[j].tryingToTx) && (txNextSlot())){
 						currSlot[currSize] = j;
 						currSize++;
 					}
 				}
 
-				//if collision, set the stations to tryingToTx, and choose next slot with prob 1/N
+				//if collision, set all stations to tryingToTx
 				if (currSize > 1){
+					//printf("[slot %d] CLLSN \n", slot, i);
 					for (int j = 0; j < currSize; j++){
 						Stations[currSlot[j]].tryingToTx = 1;
-						if (txNextSlot()){
-							nextSlot[nextSize] = j;
-							nextSize++;
-						}
 					}
 				// if no collision, transmit the one station that wants to transmit
-				} else {
+				} else if (currSize == 1){
 					transmitFrame(currSlot[0]);
 					Stations[currSlot[0]].tryingToTx = 0;
 				}
@@ -165,6 +169,7 @@ void generateFrames(){
 		if (random < p){
 			Stations[i].frameQ++;
 			Stations[i].pendingFrames = addFrame(Stations[i].pendingFrames);
+			//printf("[slot %d] GENER [station %d] generate\n", slot, i);
 		}
 	}
 }
@@ -203,6 +208,7 @@ int isIn (int num, int *array, int size){
 void transmitFrame (int stationId){
 	frameTx++;
 	Stations[stationId].frameTx++;
+	//printf("[slot %d] TRANS [station %d] has txd. count: %d\n", slot, stationId, Stations[stationId].frameTx);
 	Stations[stationId].frameQ--;
 
 	frameList *frame = getLast(Stations[stationId].pendingFrames);
@@ -216,13 +222,13 @@ void transmitFrame (int stationId){
 	Stations[stationId].pendingFrames = deleteLast(Stations[stationId].pendingFrames);
 }
 
-void copyNextToCurr(){
+/*void copyNextToCurr(){
 	for (int i = 0; i < nextSize; i++){
 		currSlot[i] = nextSlot[i];
 	}
 	currSize = nextSize;
 	nextSize = 0;
-}
+}*/
 
 // print out the end of execution statistics
 void printStats(int argc, char* argv[]){
@@ -259,6 +265,7 @@ void printStats(int argc, char* argv[]){
 		printf("%f ", mean);
 		printCI(mean, Stations[i].throughput, 0);
 
+		printf("|| ");
 		// calculate mean of avg delays
 		mean = 0;
 		for (int j = 0; j < T; j++){
@@ -287,7 +294,7 @@ void printCI(double mean, double* array, int flag){
 	double c1 = mean - error;
 	double c2 = mean + error;
 
-	printf("%f %f\n", c1, c2);
+	printf("%f %f ", c1, c2);
 	// write the throughput CI to file
 
 #ifdef OUTPUT
@@ -310,7 +317,7 @@ void cleanup(){
 	}
 
 	free(currSlot);
-	free(nextSlot);
+	//free(nextSlot);
 	free(Stations);
 }
 
