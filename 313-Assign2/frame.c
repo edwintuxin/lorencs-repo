@@ -27,7 +27,7 @@ frameList* deleteFrame (frameList *first){
     newfirst = first->next;
 
     //free space occupied by the node
-    free(*first);
+    free(first);
 
     return newfirst;
 }

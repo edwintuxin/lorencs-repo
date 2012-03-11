@@ -19,12 +19,16 @@ memwatch.o: memwatch.c memwatch.h
 test: test.o frame.o memwatch.o
 	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o test test.o frame.o memwatch.o -lm
 	
+test.o:
+	gcc $(CFLAGS) -Wall -c -DMEMWATCH -DMW_STDIO -std=c99 test.c
+	
 clean:
 	-rm -f *.exe psim core
 	-rm -f *.o psim core
 	-rm -f *.o frame core
+	-rm -f *.o test core
 	-rm -f *.o *.log memwatch core
 	
-test:
+run:
 	./psim T 2 0.04 50000 5 1 2 3 4 5
 
