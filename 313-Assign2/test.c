@@ -13,17 +13,8 @@ int main(){
 
 	first = addFrame(first);
 	increaseDelay(first);
-	first = addFrame(first);
-	first = addFrame(first);
-	first = addFrame(first);
+	first = deleteLast(first);
 
-	increaseDelay(first);
-
-	first = addFrame(first);
-	increaseDelay(first);
-	first = addFrame(first);
-
-	frameList *lastnode = getLast(first);
 
 	frameList *curr, *prev;
 	curr = first;
@@ -35,8 +26,6 @@ int main(){
 		curr = curr->next;
 	}
 
-
-	printf("last is : %d\n",lastnode->frameDelay);
 	freeMemory(first);
 
 	return 0;

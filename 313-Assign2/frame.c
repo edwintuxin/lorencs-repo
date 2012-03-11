@@ -35,19 +35,20 @@ frameList* getLast (frameList *first){
 }
 
 //deletes the first frame in the frameList
-void deleteLast (frameList *first){
+frameList* deleteLast (frameList *first){
 	// special case for an empty list
 	if( first == NULL ) {
-	return;
+	return first;
 	}
 
 	// special case for the list containing a single element
 	if( first->next == NULL ) {
+		free(first);
 		first = NULL;
-		return;
+		return first;
 	}
 
-	// iterate through list, starting at root
+	// iterate through list, starting at first
 	frameList *temp = first;
 
 	// when current->next is null, current is the last element of this list and
@@ -61,7 +62,7 @@ void deleteLast (frameList *first){
 	// cut off current
 	temp->next = NULL;
 
-	return;
+	return first;
 }
 
 void increaseDelay(frameList *first){
@@ -73,6 +74,18 @@ void increaseDelay(frameList *first){
 		prev = curr;
 		curr = curr->next;
 		prev->frameDelay++;
+	}
+}
+
+void printNodes(frameList *first){
+	frameList *curr, *prev;
+	curr = first;
+	prev = NULL;
+
+	while( curr != NULL ){
+		prev = curr;
+		printf("%d ", prev->frameDelay);
+		curr = curr->next;
 	}
 }
 
