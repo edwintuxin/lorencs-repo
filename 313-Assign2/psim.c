@@ -96,21 +96,8 @@ void runSim(){
 				// if station corresponding to slot has frame(s) to tx
 				// transmit one frame
 				if (Stations[i].frameQ > 0){
-					frameTx++;
-					Stations[i].frameTx++;
-					Stations[i].frameQ--;
-
-					frameList *frame = getLast(Stations[i].pendingFrames);
-
-					if (Stations[i].frameTx > Stations[i].arraySize){
-						Stations[i].arraySize = Stations[i].arraySize * 2;
-						Stations[i].frameDelay = realloc(Stations[i].frameDelay, Stations[i].arraySize*sizeof(int));
-					}
-
-					Stations[i].frameDelay[Stations[i].frameTx-1] = frame->frameDelay;
-					Stations[i].pendingFrames = deleteLast(Stations[i].pendingFrames);
+					transmitFrame(i);
 				}
-
 
 				break;
 
@@ -135,6 +122,10 @@ void runSim(){
 							nextSize++;
 						}
 					}
+				// if no collision, transmit the one station that wants to transmit
+				} else {
+					transmitFrame(currSlot[0]);
+					Stations[currSlot[0]].tryingToTx = 0;
 				}
 
 				break;
@@ -206,6 +197,23 @@ int isIn (int num, int *array, int size){
 		}
 	}
 	return 0;
+}
+
+// transmits the frame of a station stationId
+void transmitFrame (int stationId){
+	frameTx++;
+	Stations[stationId].frameTx++;
+	Stations[stationId].frameQ--;
+
+	frameList *frame = getLast(Stations[stationId].pendingFrames);
+
+	if (Stations[stationId].frameTx > Stations[stationId].arraySize){
+		Stations[stationId].arraySize = Stations[stationId].arraySize * 2;
+		Stations[stationId].frameDelay = realloc(Stations[stationId].frameDelay, Stations[stationId].arraySize*sizeof(int));
+	}
+
+	Stations[stationId].frameDelay[Stations[stationId].frameTx-1] = frame->frameDelay;
+	Stations[stationId].pendingFrames = deleteLast(Stations[stationId].pendingFrames);
 }
 
 void copyNextToCurr(){
