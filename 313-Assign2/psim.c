@@ -23,6 +23,10 @@ station *Stations;
 double throughput[5];		// array of throughputs for each trial
 int frameTx;				// # of successful transmissions (in one trial)
 
+// used in Protocol P
+int *currentSlot;			// array of station ids want to transmit in the current slot
+int *nextSlot;				// array of station ids want to transmit in the next slot
+
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
 
@@ -66,62 +70,58 @@ int main(int argc, char* argv[]){
 
 void runSim(){
 	int slot = 0;		// count of how many slot times have elapsed
-
+	int i = 0;			// int form 0 to N-1 showing which slot of the bus it is in
 	while (slot < R){
+		if (i == N){
+			i = 0;
+		}
 
-		// go through entire station bus
-		for (int i = 0; i < N; i++){
-			//end simulation if R slots have elapsed
-			if (slot > R){
-				break;
-			}
+		generateFrames();
 
-			generateFrames();
+		for (int j = 0; j < N; j++){
+			increaseDelay(Stations[j].pendingFrames);
+		}
 
-			for (int j = 0; j < N; j++){
-				increaseDelay(Stations[j].pendingFrames);
-			}
+		// behave according to the specified protocol
+		switch(Protocol){
+			case 'T':
+				// if station corresponding to slot has frame(s) to tx
+				// transmit one frame
+				if (Stations[i].frameQ > 0){
+					frameTx++;
+					Stations[i].frameTx++;
+					Stations[i].frameQ--;
 
+					frameList *frame = getLast(Stations[i].pendingFrames);
 
-			// behave according to the specified protocol
-			switch(Protocol){
-				case 'T':
-					// if station corresponding to slot has frame(s) to tx
-					// transmit one frame
-					if (Stations[i].frameQ > 0){
-						frameTx++;
-						Stations[i].frameTx++;
-						Stations[i].frameQ--;
-
-						frameList *frame = getLast(Stations[i].pendingFrames);
-
-						if (Stations[i].frameTx > Stations[i].arraySize){
-							Stations[i].arraySize = Stations[i].arraySize * 2;
-							Stations[i].frameDelay = realloc(Stations[i].frameDelay, Stations[i].arraySize*sizeof(int));
-						}
-
-						Stations[i].frameDelay[Stations[i].frameTx-1] = frame->frameDelay;
-
-						Stations[i].pendingFrames = deleteLast(Stations[i].pendingFrames);
-
+					if (Stations[i].frameTx > Stations[i].arraySize){
+						Stations[i].arraySize = Stations[i].arraySize * 2;
+						Stations[i].frameDelay = realloc(Stations[i].frameDelay, Stations[i].arraySize*sizeof(int));
 					}
 
-					break;
-				case 'P':
+					Stations[i].frameDelay[Stations[i].frameTx-1] = frame->frameDelay;
+					Stations[i].pendingFrames = deleteLast(Stations[i].pendingFrames);
+				}
 
-					break;
 
-				case 'I':
+				break;
 
-					break;
+			case 'P':
 
-				case 'B':
+				break;
 
-					break;
-			}
+			case 'I':
 
-			slot++;
+				break;
+
+			case 'B':
+
+				break;
 		}
+
+		i++;
+		slot++;
+
 	}
 
 }
