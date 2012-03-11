@@ -14,8 +14,9 @@
 
 // struct to hold info about the N station
 typedef struct{
-	int frameQ;			// count that indicates how many frames are waiting to be transmitted
-	int frameTx;		// count of how many frames this station has transmitted
+	int frameQ;				// count that indicates how many frames are waiting to be transmitted
+	int frameTx;			// count of how many frames this station has transmitted
+	double throughput[5];	// throughput of the station at each trial
 } station;
 
 //functions
