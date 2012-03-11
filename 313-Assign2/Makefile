@@ -5,10 +5,10 @@
 #CFLAGS = -g -O0
 
 psim: psim.o memwatch.o
-	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o psim psim.o -lm
+	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o psim psim.o memwatch.o -lm
 
 psim.o: psim.c memwatch.h
-	gcc $(CFLAGS) -Wall -Wno-format -DMEMWATCH -DMW_STDIO -std=c99 -c psim.c
+	gcc $(CFLAGS) -Wall -Wno-format -c -DMEMWATCH -DMW_STDIO -std=c99 psim.c
 
 memwatch.o: memwatch.c memwatch.h
 	gcc $(CFLAGS) -std=c99 -Wall -c -DMEMWATCH -DMW_STDIO memwatch.c 
