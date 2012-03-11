@@ -5,6 +5,11 @@
  *      Author: lorencs
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include "frame.h"
 #include "memwatch.h"
 
 #ifndef PSIM_H_

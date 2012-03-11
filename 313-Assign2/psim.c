@@ -5,12 +5,7 @@
  *      Author: lorencs
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
 #include "psim.h"
-#include "frame.h"
 #include "memwatch.h"
 
 #define DEBUG
@@ -56,9 +51,9 @@ int main(int argc, char* argv[]){
 		throughput[i] = (double)frameTx/ (double)R;
 
 		for (int j = 0; j < N; j++){
-			free(Stations[j].frameDelay);
 			Stations[j].throughput[i] = (double)Stations[j].frameTx/ (double)R;
 			Stations[j].avgDelay[i] = getAvgDelay(Stations[j].frameDelay, Stations[j].frameTx);
+			free(Stations[j].frameDelay);
 		}
 	}
 
@@ -107,6 +102,8 @@ void runSim(){
 
 						Stations[i].frameDelay[Stations[i].frameTx-1] = frame->frameDelay;
 
+						Stations[i].pendingFrames = deleteLast(Stations[i].pendingFrames);
+
 					}
 
 					break;
@@ -152,12 +149,14 @@ void generateFrames(){
 }
 
 double getAvgDelay(int *array, int size){
-	double sum = 0;
+	int sum = 0;
 	for (int i = 0; i < size; i++){
 		sum = sum + array[i];
 	}
 
-	return sum/(double)size;
+	double avg = (double)sum/(double)size;
+
+	return avg;
 }
 
 // print out the end of execution statistics
