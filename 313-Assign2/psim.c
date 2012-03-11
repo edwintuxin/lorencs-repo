@@ -21,7 +21,7 @@ int T;						// number of trials
 int t[5];					// array of 5 seeds for 5 trials
 
 /* other global vars */
-station Stations[N];		// array of structs of stations
+station *Stations;
 double throughput[5];		// array of throughputs for each trial
 int frameTx;				// # of successful transmissions (in one trial)
 
@@ -39,6 +39,8 @@ int main(int argc, char* argv[]){
 	sscanf(argv[8], "%d", &t[2]);
 	sscanf(argv[9], "%d", &t[3]);
 	sscanf(argv[10], "%d", &t[4]);
+
+	Stations = malloc(N*sizeof(station));
 
 	// run simulation T times
 	for (int i = 0; i < T; i++){
