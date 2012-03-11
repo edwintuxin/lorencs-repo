@@ -21,7 +21,9 @@ int T;						// number of trials
 int t[5];					// array of 5 seeds for 5 trials
 
 /* other global vars */
-station Stations[N];
+station Stations[N];		// array of structs of stations
+double throughput[5];		// array of throughputs for each trial
+int frameTx;				// # of successful transmissions (in one trial)
 
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
@@ -40,8 +42,13 @@ int main(int argc, char* argv[]){
 
 	// run simulation T times
 	for (int i = 0; i < T; i++){
+		frameTx = 0;
+		srand(t[i]);
 		initStations();
+
 		runSim();
+
+		throughput[i] = frameTx/R;
 	}
 
 	printStats(argc, argv);
@@ -69,6 +76,8 @@ void runSim(){
 					// if station corresponding to slot has frame(s) to tx
 					// transmit one frame
 					if (Stations[i].frameQ > 0){
+						frameTx++;
+						Stations[i].frameTx++;
 						Stations[i].frameQ--;
 					}
 
@@ -89,6 +98,7 @@ void runSim(){
 			slot++;
 		}
 	}
+
 }
 
 // resets/initializes  all stations
@@ -110,7 +120,7 @@ void generateFrames(){
 
 // print out the end of execution statistics
 void printStats(int argc, char* argv[]){
-	for (int i = 1; i < argc; i++){
+	for (int i = 1; i < 5; i++){
 		printf("%s ", argv[i]);
 	}
 	printf("\n");
