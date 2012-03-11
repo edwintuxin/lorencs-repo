@@ -7,26 +7,26 @@
 #include "frame.h"
 
 
-int main(){
-
-	frameList *first = NULL;
-
-	first = addFrame(first);
-	increaseDelay(first);
-	first = deleteLast(first);
-
-
-	frameList *curr, *prev;
-	curr = first;
-	prev = NULL;
-
-	while( curr != NULL ){
-		prev = curr;
-		printf("delay: %d\n", prev->frameDelay);
-		curr = curr->next;
+int txNextSlot(){
+		double p = 1/(double)N;
+		double random = (double)rand() / (double)RAND_MAX;
+		if (random < p){
+			return 1;
+		}
+		return 0;
 	}
 
-	freeMemory(first);
+int main(){
 
-	return 0;
+	int N = 20;
+
+
+
+	for (int i = 0; i < 100; i++){
+		if (txNextSlot()){
+			printf("transmit\n");
+		} else {
+			printf("no transmit\n");
+		}
+	}
 }

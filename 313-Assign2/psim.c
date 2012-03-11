@@ -24,8 +24,10 @@ double throughput[5];		// array of throughputs for each trial
 int frameTx;				// # of successful transmissions (in one trial)
 
 // used in Protocol P
-int *currentSlot;			// array of station ids want to transmit in the current slot
+int *currSlot;			// array of station ids want to transmit in the current slot
 int *nextSlot;				// array of station ids want to transmit in the next slot
+int currSize;				// how many stations want to transmit in current slot
+int nextSize;				// how many stations want to transmit in next slot
 
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
@@ -43,12 +45,18 @@ int main(int argc, char* argv[]){
 	sscanf(argv[10], "%d", &t[4]);
 
 	Stations = malloc(N*sizeof(station));
+	currSlot = malloc(N*sizeof(int));
+	nextSlot = malloc(N*sizeof(int));
+	currSize = 0;
+	nextSize = 0;
 
 	// run simulation T times
 	for (int i = 0; i < T; i++){
 		frameTx = 0;
 		srand(t[i]);
 		initStations();
+		currSize = 0;
+		nextSize = 0;
 
 		runSim();
 
@@ -107,6 +115,27 @@ void runSim(){
 				break;
 
 			case 'P':
+				copyNextToCurr();	// copy the stations from "nextSlot" to "currSlot"
+
+				for (int j = 0; j < N; j++){
+					// if station wants to transmit, and it isn't already wanting to transmit this slot
+					// and if it isn't trying to pick a slot to tx in, add it to list of stations wanting to transmit
+					if ((Stations[j].frameQ > 0) && (!isIn(j, currSlot, currSize)) && (!Stations[j].tryingToTx)){
+						currSlot[currSize] = j;
+						currSize++;
+					}
+				}
+
+				//if collision, set the stations to tryingToTx, and choose next slot with prob 1/N
+				if (currSize > 1){
+					for (int j = 0; j < currSize; j++){
+						Stations[currSlot[j]].tryingToTx = 1;
+						if (txNextSlot()){
+							nextSlot[nextSize] = j;
+							nextSize++;
+						}
+					}
+				}
 
 				break;
 
@@ -131,6 +160,7 @@ void initStations(){
 	for (int i = 0; i < N; i++){
 		Stations[i].frameQ = 0;
 		Stations[i].frameTx = 0;
+		Stations[i].tryingToTx = 0;
 		Stations[i].arraySize = 100;
 		Stations[i].pendingFrames = NULL;
 		Stations[i].frameDelay = malloc(Stations[i].arraySize*sizeof(int));
@@ -148,6 +178,16 @@ void generateFrames(){
 	}
 }
 
+// returns 1 with a probability of 1/N
+int txNextSlot(){
+	double p = 1/(double)N;
+	double random = (double)rand() / (double)RAND_MAX;
+	if (random < p){
+		return 1;
+	}
+	return 0;
+}
+
 double getAvgDelay(int *array, int size){
 	int sum = 0;
 	for (int i = 0; i < size; i++){
@@ -157,6 +197,23 @@ double getAvgDelay(int *array, int size){
 	double avg = (double)sum/(double)size;
 
 	return avg;
+}
+
+int isIn (int num, int *array, int size){
+	for (int i = 0; i < size; i++){
+		if (num == array[i]){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void copyNextToCurr(){
+	for (int i = 0; i < nextSize; i++){
+		currSlot[i] = nextSlot[i];
+	}
+	currSize = nextSize;
+	nextSize = 0;
 }
 
 // print out the end of execution statistics
@@ -244,6 +301,8 @@ void cleanup(){
 		freeMemory(Stations[i].pendingFrames);
 	}
 
+	free(currSlot);
+	free(nextSlot);
 	free(Stations);
 }
 
