@@ -26,6 +26,7 @@ typedef struct{
 	int arraySize;				// keeps track of current size of the frameDelay array
 	int tryingToTx;				// for protocol P: 0 if station is trying to tx for the first time, 1 if station is picking a slot to tx in
 								// for protocol I: -1 if station is trying to tx for the first time, offset 0 to N if station has picked slot to tx in
+	int intExp;					// for protocol B, an interval will be selected from 1 to 2^intExp
 
 	double throughput[5];		// throughput of the station at each trial
 	double avgDelay[5];			// avg delay of the station at each trial
@@ -39,7 +40,7 @@ void initStations();
 double getAvgDelay(int *array, int size);
 int isIn (int num, int *array, int size);
 int txNextSlot();
-int txSlotOffset();
+int txSlotOffset(int upperBound);
 void transmitFrame (int stationId);
 void copyNextToCurr();
 void printStats(int argc, char* argv[]);

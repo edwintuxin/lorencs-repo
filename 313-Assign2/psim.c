@@ -151,7 +151,7 @@ void runSim(){
 				if (currSize > 1){
 					//printf("[slot %d] CLLSN \n", slot, i);
 					for (int j = 0; j < currSize; j++){
-						Stations[currSlot[j]].tryingToTx = txSlotOffset();
+						Stations[currSlot[j]].tryingToTx = txSlotOffset(N);
 					}
 				// if no collision, transmit the one station that wants to transmit
 				} else if (currSize == 1){
@@ -169,6 +169,37 @@ void runSim(){
 				break;
 
 			case 'B':
+
+				currSize = 0;
+
+				for (int j = 0; j < N; j++){
+					// if station wants to transmit, and it hasn't had a slot (1 to N) assigned to it
+					// then add it to the list of stations currently wanting to transmit
+					if ((Stations[j].frameQ > 0) && (Stations[j].tryingToTx < 1)){
+						currSlot[currSize] = j;
+						currSize++;
+					}
+				}
+
+				//if collision, set slot offset for all stations trying to tx
+				if (currSize > 1){
+					//printf("[slot %d] CLLSN \n", slot, i);
+					for (int j = 0; j < currSize; j++){
+						Stations[currSlot[j]].tryingToTx = txSlotOffset(pow(2, Stations[currSlot[j]].intExp));
+						Stations[currSlot[j]].intExp++;
+					}
+				// if no collision, transmit the one station that wants to transmit
+				} else if (currSize == 1){
+					transmitFrame(currSlot[0]);
+					Stations[currSlot[0]].tryingToTx = -1;
+				}
+
+				//decrease 'tryingToTx' of all stations that have an offset
+				for (int j = 0; j < N; j++){
+					if (Stations[j].tryingToTx > 0){
+						Stations[j].tryingToTx--;
+					}
+				}
 
 				break;
 		}
@@ -190,6 +221,7 @@ void initStations(){
 		} else {
 			Stations[i].tryingToTx = 0;
 		}
+		Stations[i].intExp = 1;
 		Stations[i].arraySize = 100;
 		Stations[i].pendingFrames = NULL;
 		Stations[i].frameDelay = malloc(Stations[i].arraySize*sizeof(int));
@@ -218,10 +250,10 @@ int txNextSlot(){
 	return 0;
 }
 
-// returns integer between 1 and N
-int txSlotOffset(){
+// returns integer between 1 and upperBound
+int txSlotOffset(int upperBound){
 	double random = (double)rand() / (double)RAND_MAX;
-	return 1 + floor(N*random);
+	return 1 + floor(upperBound*random);
 }
 
 double getAvgDelay(int *array, int size){
