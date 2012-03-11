@@ -29,6 +29,9 @@ clean:
 	-rm -f *.o test core
 	-rm -f *.o *.log memwatch core
 	
-run:
-	./psim T 20 0.05 50000 5 1 2 3 4 5
+runT:
+	./psim T 20 0.02 50000 5 1 2 3 4 5
+	
+runP:
+	./psim T 20 0.02 50000 5 1 2 3 4 5
 
