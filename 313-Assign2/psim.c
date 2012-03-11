@@ -12,6 +12,8 @@
 #include "psim.h"
 #include "memwatch.h"
 
+#define DEBUG
+
 /* input global variables */
 char Protocol;				// type of protocol
 int N;						// number of stations
@@ -129,6 +131,63 @@ void printStats(int argc, char* argv[]){
 		printf("%s ", argv[i]);
 	}
 	printf("\n");
+
+	// calculate mean of throughput
+	double mean = 0;
+	for (int i = 0; i < T; i++){
+		mean = mean + throughput[i];
+	}
+	mean = mean/T;
+
+	#ifdef DEBUG
+		printf("avg throughput: ");
+	#endif
+
+	printf("%f ", mean);
+	printCI(mean, throughput, 0);
+	printf("\n");
+
+
+
+	for (int i = 0; i < N; i++){
+
+		#ifdef DEBUG
+			printf("[%d] throughput: ", i);
+		#endif
+		// calculate mean of throughput
+		mean = 0;
+		for (int j = 0; j < T; j++){
+			mean = mean + Stations[i].throughput[j];
+		}
+		mean = mean/T;
+
+		printf("%f ", mean);
+		printCI(mean, Stations[i].throughput, 0);
+		printf("\n");
+	}
+}
+
+// print the confidence interval given the sample mean, and an array of data (of size T)
+// flag indicates if it is for the avg frames txd, or for the throughput
+void printCI(double mean, double* array, int flag){
+	double expectedSum = 0;
+	for (int i = 0; i < T; i++){
+		expectedSum = expectedSum + pow((array[i] - mean), 2);
+	}
+
+	double stdDev = sqrt(expectedSum/(T-1));
+
+	double error = 2.776*(stdDev/pow(T,1/2));
+	double c1 = mean - error;
+	double c2 = mean + error;
+
+	printf("%f %f\n", c1, c2);
+	// write the throughput CI to file
+	if (flag){
+#ifdef OUTPUT
+		fprintf(logfile, "%f %f\n", c1, c2);
+#endif
+	}
 }
 
 // verify the input
