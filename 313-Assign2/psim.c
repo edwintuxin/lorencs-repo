@@ -184,6 +184,12 @@ int txNextSlot(){
 	return 0;
 }
 
+// returns integer between 1 and N
+int txNextSlotInt(){
+	double random = (double)rand() / (double)RAND_MAX;
+	return 1 + floor(N*random);
+}
+
 double getAvgDelay(int *array, int size){
 	int sum = 0;
 	for (int i = 0; i < size; i++){
