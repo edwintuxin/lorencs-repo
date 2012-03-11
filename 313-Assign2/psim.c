@@ -54,8 +54,11 @@ int main(int argc, char* argv[]){
 		runSim();
 
 		throughput[i] = (double)frameTx/ (double)R;
+
 		for (int j = 0; j < N; j++){
+			free(Stations[j].frameDelay);
 			Stations[j].throughput[i] = (double)Stations[j].frameTx/ (double)R;
+			Stations[j].avgDelay[i] = getAvgDelay(Stations[j].frameDelay, Stations[j].frameTx);
 		}
 	}
 
@@ -80,6 +83,11 @@ void runSim(){
 
 			generateFrames();
 
+			for (int j = 0; j < N; j++){
+				increaseDelay(Stations[j].pendingFrames);
+			}
+
+
 			// behave according to the specified protocol
 			switch(Protocol){
 				case 'T':
@@ -89,6 +97,16 @@ void runSim(){
 						frameTx++;
 						Stations[i].frameTx++;
 						Stations[i].frameQ--;
+
+						frameList *frame = getLast(Stations[i].pendingFrames);
+
+						if (Stations[i].frameTx > Stations[i].arraySize){
+							Stations[i].arraySize = Stations[i].arraySize * 2;
+							Stations[i].frameDelay = realloc(Stations[i].frameDelay, Stations[i].arraySize*sizeof(int));
+						}
+
+						Stations[i].frameDelay[Stations[i].frameTx-1] = frame->frameDelay;
+
 					}
 
 					break;
@@ -133,6 +151,15 @@ void generateFrames(){
 	}
 }
 
+double getAvgDelay(int *array, int size){
+	double sum = 0;
+	for (int i = 0; i < size; i++){
+		sum = sum + array[i];
+	}
+
+	return sum/(double)size;
+}
+
 // print out the end of execution statistics
 void printStats(int argc, char* argv[]){
 	for (int i = 1; i < 6; i++){
@@ -152,13 +179,12 @@ void printStats(int argc, char* argv[]){
 	printCI(mean, throughput, 0);
 	printf("\n");
 
-
-
 	for (int i = 0; i < N; i++){
 
 		#ifdef DEBUG
 			printf("[%d] throughput: ", i);
 		#endif
+
 		// calculate mean of throughput
 		mean = 0;
 		for (int j = 0; j < T; j++){
@@ -168,6 +194,17 @@ void printStats(int argc, char* argv[]){
 
 		printf("%f ", mean);
 		printCI(mean, Stations[i].throughput, 0);
+
+		// calculate mean of avg delays
+		mean = 0;
+		for (int j = 0; j < T; j++){
+			mean = mean + Stations[i].avgDelay[j];
+		}
+		mean = mean/T;
+
+		printf("%f ", mean);
+		printCI(mean, Stations[i].avgDelay, 0);
+
 		printf("\n");
 	}
 }
@@ -204,6 +241,10 @@ void checkInput(int argc, char* argv[]){
 }
 
 void cleanup(){
+	for (int i = 0; i < N; i++){
+		freeMemory(Stations[i].pendingFrames);
+	}
+
 	free(Stations);
 }
 
