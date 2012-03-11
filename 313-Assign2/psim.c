@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "psim.h"
+#include "frame.h"
 #include "memwatch.h"
 
 #define DEBUG
@@ -115,6 +116,9 @@ void initStations(){
 	for (int i = 0; i < N; i++){
 		Stations[i].frameQ = 0;
 		Stations[i].frameTx = 0;
+		Stations[i].arraySize = 100;
+		Stations[i].pendingFrames = NULL;
+		Stations[i].frameDelay = malloc(Stations[i].arraySize*sizeof(int));
 	}
 }
 
@@ -124,6 +128,7 @@ void generateFrames(){
 		double random = (double)rand() / (double)RAND_MAX;
 		if (random < p){
 			Stations[i].frameQ++;
+			Stations[i].pendingFrames = addFrame(Stations[i].pendingFrames);
 		}
 	}
 }

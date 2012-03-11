@@ -4,19 +4,27 @@
 
 #CFLAGS = -g -O0
 
-psim: psim.o memwatch.o
-	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o psim psim.o memwatch.o -lm
+psim: psim.o frame.o memwatch.o
+	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o psim psim.o frame.o memwatch.o -lm
 
 psim.o: psim.c memwatch.h
 	gcc $(CFLAGS) -Wall -Wno-format -c -DMEMWATCH -DMW_STDIO -std=c99 psim.c
+	
+frame.o: frame.c memwatch.h
+	gcc $(CFLAGS) -Wall -Wno-format -c -DMEMWATCH -DMW_STDIO -std=c99 frame.c
 
 memwatch.o: memwatch.c memwatch.h
 	gcc $(CFLAGS) -std=c99 -Wall -c -DMEMWATCH -DMW_STDIO memwatch.c 
 	
+test: test.o frame.o memwatch.o
+	gcc $(CFLAGS) -Wall -Wno-format -std=c99 -o test test.o frame.o memwatch.o -lm
+	
 clean:
 	-rm -f *.exe psim core
 	-rm -f *.o psim core
+	-rm -f *.o frame core
+	-rm -f *.o *.log memwatch core
 	
 test:
-	./psim T 5 0.04 50000 5 1 2 3 4 5
+	./psim T 2 0.04 50000 5 1 2 3 4 5
 

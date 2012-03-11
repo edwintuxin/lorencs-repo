@@ -14,9 +14,12 @@
 
 // struct to hold info about the N station
 typedef struct{
-	int frameQ;				// count that indicates how many frames are waiting to be transmitted
-	int frameTx;			// count of how many frames this station has transmitted
-	double throughput[5];	// throughput of the station at each trial
+	int frameQ;					// count that indicates how many frames are waiting to be transmitted
+	int frameTx;				// count of how many frames this station has transmitted
+	double throughput[5];		// throughput of the station at each trial
+	frameList *pendingFrames;	// linked list of pending frames
+	int *frameDelay;			// dynamic array of the delays of successfully transmitted frames
+	int arraySize;				// keeps track of current size of the frameDelay array
 } station;
 
 //functions
