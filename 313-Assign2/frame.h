@@ -24,5 +24,6 @@ typedef struct frameList{
 //ADT function prototypes
 frameList *addFrame(frameList *first);
 void deleteLast (frameList *first);
+frameList* getLast (frameList *first);
 void freeMemory(frameList *first);
 void increaseDelay(frameList *first);

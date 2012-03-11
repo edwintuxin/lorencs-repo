@@ -19,6 +19,21 @@ frameList* addFrame(frameList *first){
     return newnode;
 }
 
+//returns the last element of the list
+frameList* getLast (frameList *first){
+	// special case for the list containing a single element
+	if( first->next == NULL ) {
+		return first;
+	}
+
+	frameList *temp = first;
+	while( temp->next->next != NULL ) {
+	temp = temp->next;
+	}
+
+	return temp->next;
+}
+
 //deletes the first frame in the frameList
 void deleteLast (frameList *first){
 	// special case for an empty list
