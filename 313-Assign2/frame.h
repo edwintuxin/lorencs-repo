@@ -16,13 +16,13 @@
 #define MAX_MNAME 128
 
 //matrix list structure
-typedef struct {
+typedef struct frameList{
     int frameDelay;
-    frameList *next;
+    struct frameList *next;
 } frameList;
 
 //ADT function prototypes
-frameList *addMatrix(frameList *first);
-frameList *deleteMatrix (frameList *first);
+frameList *addFrame(frameList *first);
+frameList *deleteFrame (frameList *first);
 void freeMemory(frameList *first);
 void increaseDelay(frameList *first);

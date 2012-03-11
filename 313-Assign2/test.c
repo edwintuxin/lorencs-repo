@@ -10,19 +10,31 @@
 int main(){
 
 	frameList *first = NULL;
+
+	first = addFrame(first);
+	first = addFrame(first);
+	first = addFrame(first);
+	first = addFrame(first);
+
 	increaseDelay(first);
 
 	first = addFrame(first);
+	increaseDelay(first);
+	first = addFrame(first);
 
-	frameList* curr, * prev;
+	first = deleteFrame(first);
+
+	frameList *curr, *prev;
 	curr = first;
 	prev = NULL;
 
 	while( curr != NULL ){
 		prev = curr;
+		printf("delay: %d\n", prev->frameDelay);
 		curr = curr->next;
-		printf("delay: %s\n", prev->frameDelay);
 	}
+
+	freeMemory(first);
 
 	return 0;
 }
