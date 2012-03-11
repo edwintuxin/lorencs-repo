@@ -25,3 +25,5 @@ void runSim();
 void generateFrames();
 void initStations();
 void printStats(int argc, char* argv[]);
+void printCI(double mean, double* array, int flag);
+void cleanup();

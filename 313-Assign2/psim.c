@@ -17,7 +17,7 @@
 /* input global variables */
 char Protocol;				// type of protocol
 int N;						// number of stations
-double p;					// probability of frame generation
+float p;					// probability of frame generation
 int R;						// number of slots to simulate
 int T;						// number of trials
 int t[5];					// array of 5 seeds for 5 trials
@@ -52,13 +52,14 @@ int main(int argc, char* argv[]){
 
 		runSim();
 
-		throughput[i] = frameTx/R;
+		throughput[i] = (double)frameTx/ (double)R;
 		for (int j = 0; j < N; j++){
-			Stations[j].throughput[i] = Stations[j].frameTx/R;
+			Stations[j].throughput[i] = (double)Stations[j].frameTx/ (double)R;
 		}
 	}
 
 	printStats(argc, argv);
+	cleanup();
 
 	return 0;
 }
@@ -68,6 +69,7 @@ void runSim(){
 	int slot = 0;		// count of how many slot times have elapsed
 
 	while (slot < R){
+
 		// go through entire station bus
 		for (int i = 0; i < N; i++){
 			//end simulation if R slots have elapsed
@@ -112,6 +114,7 @@ void runSim(){
 void initStations(){
 	for (int i = 0; i < N; i++){
 		Stations[i].frameQ = 0;
+		Stations[i].frameTx = 0;
 	}
 }
 
@@ -127,7 +130,7 @@ void generateFrames(){
 
 // print out the end of execution statistics
 void printStats(int argc, char* argv[]){
-	for (int i = 1; i < 5; i++){
+	for (int i = 1; i < 6; i++){
 		printf("%s ", argv[i]);
 	}
 	printf("\n");
@@ -139,9 +142,6 @@ void printStats(int argc, char* argv[]){
 	}
 	mean = mean/T;
 
-	#ifdef DEBUG
-		printf("avg throughput: ");
-	#endif
 
 	printf("%f ", mean);
 	printCI(mean, throughput, 0);
@@ -183,11 +183,11 @@ void printCI(double mean, double* array, int flag){
 
 	printf("%f %f\n", c1, c2);
 	// write the throughput CI to file
-	if (flag){
+
 #ifdef OUTPUT
 		fprintf(logfile, "%f %f\n", c1, c2);
 #endif
-	}
+
 }
 
 // verify the input
@@ -196,5 +196,9 @@ void checkInput(int argc, char* argv[]){
 		printf("Warning: Not enough arguments to 'psim', please re-run with the right amount of arguments.\n");
 		exit(0);
 	}
+}
+
+void cleanup(){
+	free(Stations);
 }
 
