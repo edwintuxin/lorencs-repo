@@ -18,5 +18,5 @@ clean:
 	-rm -f *.o psim core
 	
 test:
-	./psim T 5 0.04 50,000 1 1 2 3 4 5
+	./psim T 5 0.04 50000 5 1 2 3 4 5
 
