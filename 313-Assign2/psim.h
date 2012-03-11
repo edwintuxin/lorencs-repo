@@ -37,6 +37,7 @@ void generateFrames();
 void initStations();
 double getAvgDelay(int *array, int size);
 int isIn (int num, int *array, int size);
+void transmitFrame (int stationId);
 void copyNextToCurr();
 void printStats(int argc, char* argv[]);
 void printCI(double mean, double* array, int flag);
