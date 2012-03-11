@@ -20,20 +20,33 @@ frameList* addFrame(frameList *first){
 }
 
 //deletes the first frame in the frameList
-frameList* deleteLast (frameList *first){
-    //find matrix
-	frameList *curr, *prev;
+void deleteLast (frameList *first){
+	// special case for an empty list
+	if( first == NULL ) {
+	return;
+	}
 
-	while( curr->next != NULL ){
-			prev = curr;
-			curr = curr->next;
-		}
+	// special case for the list containing a single element
+	if( first->next == NULL ) {
+		first = NULL;
+		return;
+	}
 
-	prev->next = NULL;
-    //free space occupied by the node
-    free(first);
+	// iterate through list, starting at root
+	frameList *temp = first;
 
-    return prev;
+	// when current->next is null, current is the last element of this list and
+	// last will become the new last element
+	while( temp->next->next != NULL ) {
+	temp = temp->next;
+	}
+
+	free(temp->next);
+
+	// cut off current
+	temp->next = NULL;
+
+	return;
 }
 
 void increaseDelay(frameList *first){
