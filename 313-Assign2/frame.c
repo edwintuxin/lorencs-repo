@@ -77,6 +77,7 @@ void increaseDelay(frameList *first){
 	}
 }
 
+// prints nodes of linked list (for debugging)
 void printNodes(frameList *first){
 	frameList *curr, *prev;
 	curr = first;

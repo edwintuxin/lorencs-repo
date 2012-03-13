@@ -22,7 +22,7 @@ typedef struct frameList{
 } frameList;
 
 //ADT function prototypes
-frameList *addFrame(frameList *first);
+frameList* addFrame(frameList *first);
 frameList* deleteLast (frameList *first);
 frameList* getLast (frameList *first);
 void freeMemory(frameList *first);

@@ -21,6 +21,7 @@
 typedef struct{
 	int frameQ;					// count that indicates how many frames are waiting to be transmitted
 	int frameTx;				// count of how many frames this station has transmitted
+	int frameTotal;				// total number of generated frames
 	frameList *pendingFrames;	// linked list of pending frames
 	int *frameDelay;			// dynamic array of the delays of successfully transmitted frames
 	int arraySize;				// keeps track of current size of the frameDelay array
@@ -30,6 +31,7 @@ typedef struct{
 
 	double throughput[5];		// throughput of the station at each trial
 	double avgDelay[5];			// avg delay of the station at each trial
+	double outsRatio[5];		// ratio of outstanding frame at each trial
 } station;
 
 //functions
