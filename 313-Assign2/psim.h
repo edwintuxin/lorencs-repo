@@ -40,7 +40,6 @@ void runSim();
 void generateFrames();
 void initStations();
 double getAvgDelay(int *array, int size);
-int isIn (int num, int *array, int size);
 int txNextSlot();
 int txSlotOffset(int upperBound);
 void transmitFrame (int stationId);

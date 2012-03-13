@@ -8,7 +8,7 @@
 #include "psim.h"
 #include "memwatch.h"
 
-//#define LOGFILE
+#define LOGFILE
 
 /* input global variables */
 char Protocol;				// type of protocol
@@ -47,14 +47,14 @@ int main(int argc, char* argv[]){
 	sscanf(argv[10], "%d", &t[4]);
 
 	// setup log files
-	char filename[100] = "prot.txt";
-	strcat(filename, Protocol);
-	strcat(filename, "-p");
-	char pChar[100] = "";
-	sprintf(pChar, "%d", p);
-	strcat(filename, pChar);
+	char filename[100] = "prot-";
+	char temp[2];
+	temp[0] = Protocol;
+	temp[1] = '\0';
+	strcat(filename, temp);
+	strcat(filename, ".txt");
 	logfile2 = fopen(filename, "a");
-	logfile = fopen(filename, "logfile.txt");
+	logfile = fopen("logfile.txt", "a");
 
 	Stations = malloc(N*sizeof(station));
 	currSlot = malloc(N*sizeof(int));
@@ -324,12 +324,12 @@ void printStats(int argc, char* argv[]){
 		printf("%s ", argv[i]);
 		#ifdef LOGFILE
 			fprintf(logfile, "%s ", argv[i]);
-		#endif LOGFILE
+		#endif
 	}
 	printf("\n");
 	#ifdef LOGFILE
 		fprintf(logfile, "\n");
-	#endif LOGFILE
+	#endif
 
 	// calculate mean of throughput
 	double mean = 0;
@@ -341,13 +341,14 @@ void printStats(int argc, char* argv[]){
 	printf("%f ", mean);
 	#ifdef LOGFILE
 		fprintf(logfile, "%f ", mean);
+		fprintf(logfile2, "%f ", p);
 		fprintf(logfile2, "%f ", mean);
-	#endif LOGFILE
-	printCI(mean, throughput);
+	#endif
+	printCI(mean, throughput, 1);
 	printf("\n");
 	#ifdef LOGFILE
 		fprintf(logfile, "\n");
-	#endif LOGFILE
+	#endif
 
 	//calculate mean of avg delay
 	mean = 0;
@@ -360,20 +361,20 @@ void printStats(int argc, char* argv[]){
 	#ifdef LOGFILE
 		fprintf(logfile, "%f ", mean);
 		fprintf(logfile2, "%f ", mean);
-	#endif LOGFILE
-	printCI(mean, avgDelay);
+	#endif
+	printCI(mean, avgDelay, 1);
 	printf("\n");
 	#ifdef LOGFILE
 		fprintf(logfile, "\n");
 		fprintf(logfile2, "\n");
-	#endif LOGFILE
+	#endif
 
 	for (int i = 0; i < N; i++){
 
 		printf("n%d ", i+1);
 		#ifdef LOGFILE
 			fprintf(logfile, "n%d ", i+1);
-		#endif LOGFILE
+		#endif
 
 		// calculate mean of throughput
 		mean = 0;
@@ -385,9 +386,9 @@ void printStats(int argc, char* argv[]){
 		printf("%f ", mean);
 		#ifdef LOGFILE
 			fprintf(logfile, "%f ", mean);
-		#endif LOGFILE
+		#endif
 
-		printCI(mean, Stations[i].throughput);
+		printCI(mean, Stations[i].throughput, 0);
 
 		// calculate mean of avg delays
 		mean = 0;
@@ -399,26 +400,26 @@ void printStats(int argc, char* argv[]){
 		printf("%f ", mean);
 		#ifdef LOGFILE
 			fprintf(logfile, "%f ", mean);
-		#endif LOGFILE
+		#endif
 
-		printCI(mean, Stations[i].avgDelay);
+		printCI(mean, Stations[i].avgDelay, 0);
 
 		for (int k = 0; k < T; k++){
 			printf("%f ", Stations[i].outsRatio[k]);
 			#ifdef LOGFILE
 				fprintf(logfile, "%f ", Stations[i].outsRatio[k]);
-			#endif LOGFILE
+			#endif
 		}
 
 		printf("\n");
 		#ifdef LOGFILE
 			fprintf(logfile, "\n");
-		#endif LOGFILE
+		#endif
 	}
 }
 
 // print the confidence interval given the sample mean, and an array of data (of size T)
-void printCI(double mean, double* array){
+void printCI(double mean, double* array, int flag){
 	double expectedSum = 0;
 	for (int i = 0; i < T; i++){
 		expectedSum = expectedSum + pow((array[i] - mean), 2);
@@ -433,8 +434,10 @@ void printCI(double mean, double* array){
 	printf("%f %f ", c1, c2);
 	#ifdef LOGFILE
 		fprintf(logfile, "%f %f ", c1, c2);
-		fprintf(logfile2, "%f %f ", c1, c2);
-	#endif LOGFILE
+		if (flag){
+			fprintf(logfile2, "%f %f ", c1, c2);
+		}
+	#endif
 	// write the throughput CI to file
 }
 
@@ -448,7 +451,8 @@ void checkInput(int argc, char* argv[]){
 
 void cleanup(){
 	free(currSlot);
-	//free(nextSlot);
 	free(Stations);
+	fclose(logfile);
+	fclose(logfile2);
 }
 
