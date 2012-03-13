@@ -21,14 +21,12 @@ int t[5];					// array of 5 seeds for 5 trials
 /* other global vars */
 station *Stations;
 double throughput[5];		// array of throughputs for each trial
+double avgDelay[5];			// array of average delays for each trial
 int frameTx;				// # of successful transmissions (in one trial)
 
-// used in Protocol P
-int *currSlot;			// array of station ids want to transmit in the current slot
-//int *nextSlot;				// array of station ids want to transmit in the next slot
+int *currSlot;				// array of station ids want to transmit in the current slot
 int currSize;				// how many stations want to transmit in current slot
-//int nextSize;				// how many stations want to transmit in next slot
-int slot;
+int slot;					// indicator of current slot time
 
 int main(int argc, char* argv[]){
 	checkInput(argc, argv);
@@ -47,8 +45,6 @@ int main(int argc, char* argv[]){
 
 	Stations = malloc(N*sizeof(station));
 	currSlot = malloc(N*sizeof(int));
-	//nextSlot = malloc(N*sizeof(int));
-	//nextSize = 0;
 
 	// run simulation T times
 	for (int i = 0; i < T; i++){
@@ -56,17 +52,28 @@ int main(int argc, char* argv[]){
 		srand(t[i]);
 		initStations();
 		currSize = 0;
-		//nextSize = 0;
 
 		runSim();
 
 		throughput[i] = (double)frameTx/ (double)R;
 
+		int totalDelaySum = 0;
+
 		for (int j = 0; j < N; j++){
 			Stations[j].throughput[i] = (double)Stations[j].frameTx/ (double)R;
 			Stations[j].avgDelay[i] = getAvgDelay(Stations[j].frameDelay, Stations[j].frameTx);
+
+			for (int k = 0; k < Stations[j].frameTx; k++){
+				totalDelaySum = totalDelaySum + Stations[j].frameDelay[k];
+			}
+
 			free(Stations[j].frameDelay);
+			freeMemory(Stations[j].pendingFrames);
+
+			Stations[j].outsRatio[i] = (double) (Stations[j].frameTotal - Stations[j].frameTx)/ (double) Stations[j].frameTotal;
 		}
+
+		avgDelay[i] = (double)totalDelaySum/(double)frameTx;
 	}
 
 	printStats(argc, argv);
@@ -186,7 +193,9 @@ void runSim(){
 					//printf("[slot %d] CLLSN \n", slot, i);
 					for (int j = 0; j < currSize; j++){
 						Stations[currSlot[j]].tryingToTx = txSlotOffset(pow(2, Stations[currSlot[j]].intExp));
-						Stations[currSlot[j]].intExp++;
+						if (Stations[currSlot[j]].intExp < 10){
+							Stations[currSlot[j]].intExp++;
+						}
 					}
 				// if no collision, transmit the one station that wants to transmit
 				} else if (currSize == 1){
@@ -216,6 +225,7 @@ void initStations(){
 	for (int i = 0; i < N; i++){
 		Stations[i].frameQ = 0;
 		Stations[i].frameTx = 0;
+		Stations[i].frameTotal = 0;
 		if (Protocol == 'I'){
 			Stations[i].tryingToTx = -1;
 		} else {
@@ -234,8 +244,8 @@ void generateFrames(){
 		double random = (double)rand() / (double)RAND_MAX;
 		if (random < p){
 			Stations[i].frameQ++;
+			Stations[i].frameTotal++;
 			Stations[i].pendingFrames = addFrame(Stations[i].pendingFrames);
-			//printf("[slot %d] GENER [station %d] generate\n", slot, i);
 		}
 	}
 }
@@ -256,6 +266,7 @@ int txSlotOffset(int upperBound){
 	return 1 + floor(upperBound*random);
 }
 
+// gets avg delay of a station
 double getAvgDelay(int *array, int size){
 	int sum = 0;
 	for (int i = 0; i < size; i++){
@@ -267,20 +278,10 @@ double getAvgDelay(int *array, int size){
 	return avg;
 }
 
-int isIn (int num, int *array, int size){
-	for (int i = 0; i < size; i++){
-		if (num == array[i]){
-			return 1;
-		}
-	}
-	return 0;
-}
-
 // transmits the frame of a station stationId
 void transmitFrame (int stationId){
 	frameTx++;
 	Stations[stationId].frameTx++;
-	//printf("[slot %d] TRANS [station %d] has txd. count: %d\n", slot, stationId, Stations[stationId].frameTx);
 	Stations[stationId].frameQ--;
 
 	frameList *frame = getLast(Stations[stationId].pendingFrames);
@@ -293,14 +294,6 @@ void transmitFrame (int stationId){
 	Stations[stationId].frameDelay[Stations[stationId].frameTx-1] = frame->frameDelay;
 	Stations[stationId].pendingFrames = deleteLast(Stations[stationId].pendingFrames);
 }
-
-/*void copyNextToCurr(){
-	for (int i = 0; i < nextSize; i++){
-		currSlot[i] = nextSlot[i];
-	}
-	currSize = nextSize;
-	nextSize = 0;
-}*/
 
 // print out the end of execution statistics
 void printStats(int argc, char* argv[]){
@@ -316,16 +309,24 @@ void printStats(int argc, char* argv[]){
 	}
 	mean = mean/T;
 
-
 	printf("%f ", mean);
 	printCI(mean, throughput, 0);
 	printf("\n");
 
+	//calculate mean of avg delay
+	mean = 0;
+	for (int i = 0; i < T; i++){
+		mean = mean + avgDelay[i];
+	}
+	mean = mean/T;
+
+	printf("%f ", mean);
+	printCI(mean, avgDelay, 0);
+	printf("\n");
+
 	for (int i = 0; i < N; i++){
 
-		#ifdef DEBUG
-			printf("[%d] throughput: ", i);
-		#endif
+		printf("n%d ", i+1);
 
 		// calculate mean of throughput
 		mean = 0;
@@ -337,7 +338,6 @@ void printStats(int argc, char* argv[]){
 		printf("%f ", mean);
 		printCI(mean, Stations[i].throughput, 0);
 
-		printf("|| ");
 		// calculate mean of avg delays
 		mean = 0;
 		for (int j = 0; j < T; j++){
@@ -347,6 +347,10 @@ void printStats(int argc, char* argv[]){
 
 		printf("%f ", mean);
 		printCI(mean, Stations[i].avgDelay, 0);
+
+		for (int k = 0; k < T; k++){
+			printf("%f ", Stations[i].outsRatio[k]);
+		}
 
 		printf("\n");
 	}
@@ -384,10 +388,6 @@ void checkInput(int argc, char* argv[]){
 }
 
 void cleanup(){
-	for (int i = 0; i < N; i++){
-		freeMemory(Stations[i].pendingFrames);
-	}
-
 	free(currSlot);
 	//free(nextSlot);
 	free(Stations);

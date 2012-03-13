@@ -19,13 +19,11 @@ int main(int argc, char * argv[]){
 	sscanf(argv[1], "%d", &seed);
 	srand(seed);
 
-	int txCount = 0;
 
 	for (int i = 0; i < 100; i++){
-		printf("%f\n", txNextSlotInt());
+		printf("%d\n", txNextSlotInt());
 	}
 
-	printf("txCount: %d\n", txCount);
 
 	return 0;
 }
