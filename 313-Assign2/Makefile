@@ -28,7 +28,6 @@ clean:
 	-rm -f *.o frame core
 	-rm -f *.o test core
 	-rm -f *.o *.log memwatch core
-	
 
 runT:
 	./psim T 20 0.01 50000 5 1 2 3 4 5
