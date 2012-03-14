@@ -4,7 +4,8 @@
  *  Created on: Mar 10, 2012
  *      Author: Mik
  */
-#import "frame.h"
+#include "frame.h"
+#include <math.h>
 
 int N = 20;
 
@@ -14,7 +15,7 @@ int txNextSlotInt(){
 	return 1 + floor(N*random);
 }
 
-int main(int argc, char * argv[]){
+int poop(int argc, char * argv[]){
 	int seed;
 	sscanf(argv[1], "%d", &seed);
 	srand(seed);

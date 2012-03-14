@@ -8,7 +8,8 @@
 #include "psim.h"
 #include "memwatch.h"
 
-#define LOGFILE
+//#define LOGFILE		// define to have the program print all stdout to a file, 
+				// and all graphing related output to another file
 
 /* input global variables */
 char Protocol;				// type of protocol
