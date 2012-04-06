@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.2.5" />
+<style type="text/css">
+/* Debug borders */
+p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
+/*
+  border: 1px solid red;
+*/
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+tt {
+  color: navy;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  font-family: sans-serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+
+div.sectionbody {
+  font-family: serif;
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+span#author {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+span#email {
+}
+span#revision {
+  font-family: sans-serif;
+}
+
+div#footer {
+  font-family: sans-serif;
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+div#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+div#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+div#preamble,
+div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-right: 10%;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+
+div.listingblock {
+  margin-right: 0%;
+}
+div.listingblock > div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock > div.content {
+  padding-left: 2.0em;
+}
+
+div.attribution {
+  text-align: right;
+}
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 2px solid silver;
+}
+
+div.exampleblock > div.content {
+  border-left: 2px solid silver;
+  padding: 0.5em;
+}
+
+div.verseblock div.content {
+  white-space: pre;
+}
+
+div.imageblock div.content { padding-left: 0; }
+div.imageblock img { border: 1px solid silver; }
+span.image img { border-style: none; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: italic;
+}
+dd > *:first-child {
+  margin-top: 0;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+div.olist2 ol {
+  list-style-type: lower-alpha;
+}
+
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+tfoot {
+  font-weight: bold;
+}
+
+div.hlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hlist td {
+  padding-bottom: 5px;
+}
+td.hlist1 {
+  vertical-align: top;
+  font-style: italic;
+  padding-right: 0.8em;
+}
+td.hlist2 {
+  vertical-align: top;
+}
+
+@media print {
+  div#footer-badges { display: none; }
+}
+
+div#toctitle {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+/* Workarounds for IE6's broken and incomplete CSS2. */
+
+div.sidebar-content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+div.sidebar-title, div.image-title {
+  font-family: sans-serif;
+  font-weight: bold;
+  margin-top: 0.0em;
+  margin-bottom: 0.5em;
+}
+
+div.listingblock div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock-content {
+  padding-left: 2.0em;
+}
+
+div.exampleblock-content {
+  border-left: 2px solid silver;
+  padding-left: 0.5em;
+}
+
+/* IE6 sets dynamically generated links as visited. */
+div#toc a:visited { color: blue; }
+</style>
+<title>CMPUT 379 - Assignment 2 Report</title>
+</head>
+<body>
+<div id="header">
+<h1>CMPUT 379 - Assignment 2 Report</h1>
+</div>
+<h4 id="_overview">Overview:</h4>
+<div class="para"><p>The implementation of this assignment is similar to the first assignment, with the required design changes applied. The execution starts in the <em>main</em> file of the program, which simply calls on functions of other files to perform the required duties of the program. There are four source files to the program: <em>main</em>, <em>mainFunctions</em>, <em>child</em>, and <em>pipeMessages</em>. The <em>mainFunctions</em> file contains the majority of the functions used in the execution of the program. The <em>child</em> file contains the code that is exclusively executed by the children during their run. The <em>pipeMessages</em> file contains code that is used for to work with the messages that are sent over the UNIX pipes.</p></div>
+<h4 id="_design_and_implementation">Design and Implementation:</h4>
+<h5 id="_parent">Parent</h5>
+<div class="para"><p>The parent begins by setting up the signal handlers for SIGINT and SIGHUP. It then performs similar tasks as in the previous assignment (readFile() to read the config file, killPrevious() to kill any pre-existing procnannys, and initChildren() to initialize children according to the config file at the start), but instead of calling a function to wait for the children to finish, the parent calls parentLoop() which loops forever. In this loop it sleeps for 5 seconds, then uses readMessages() to check and process any messages from children (more on messages below). It then uses rescanProcs() to rescan the existing processes and assigns new or reassign existing children to monitor any processes that aren't already being monitored.
+Upon catching a SIGINT, the parent sends an "exit" message to each child, and waits for every child to send back a "exit complete" acknowledgement. During this time it also accepts kill confirmations. This follows the class discussion of the parent using messages to kill children and waiting for the children to finish their monitoring before exiting.
+Upon catching a SIGHUP, the parent simply call the readFile() function again.</p></div>
+<h5 id="_children">Children</h5>
+<div class="para"><p>The children behave almost the same way as before, but their previous function of monitoring a process is wrapped into a function. The main execution of the child loops forever, blocking on the read end of the parent-to-child pipe. Upon reading a "monitor" message, it begins to monitor the designated process and upon completion of the monitoring, waits for more messages.</p></div>
+<h5 id="_messages">Messages</h5>
+<div class="para"><p>The messages are implemented using slightly modified code from lab 6. They are implemented simply as text messages which the parent and children parse. The messages that parent sends to child are:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+"monitor procName pid sleepTime"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+"monitor" is just a keyword, the other three are variables with obvious meaning
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+"exit"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the child to clean up and exit
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<div class="para"><p>The child can send the following messages:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+"available 0" or "available 1"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the parent that the child is finished monitoring and is available
+</p>
+</li>
+<li>
+<p>
+1 indicates succesful kill, 0 indicates no kill
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+"exit complete"
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tells the parent that the child has completed exiting
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h5 id="_child_pool">Child Pool</h5>
+<div class="para"><p>The child pool is an array of typedef structs of "child" that only the parent accesses.The "child" struct has following elements:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+m_id
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+if child is monitoring a process this is the pid of the monitored process; otherwise it is 0
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+p2c[2]
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+set of pipes for parent to child communication
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+c2p[2]
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+set of pipes for child to parent communication
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h4 id="_testing">Testing:</h4>
+<div class="para"><p>I reran most of the scenarios from the previous assignment. New scenarios are:</p></div>
+<div class="ilist"><ul>
+<li>
+<p>
+send SIGINT to parent; while parent is waiting for children to exit, send SIGINT again
+</p>
+</li>
+<li>
+<p>
+have some different processes (to be monitored) that exit after 3 seconds; monitor some of them for 4 seconds, the others for 12 seconds; after about 6 seconds, rerun the script that executes more processes to monitor
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+this tests many things such as the child reporting processes exiting early, the parent properly processing children that have finished monitoring, and reassigning them to new processes to monitor, as well as forking off new children when there are not enough idle processes
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+while the children are monitoring some process, add a process to monitor to config file, run new instances of the old processes and the new process, send SIGHUP to parent
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+tests the functionality of the rescanProcs() function as well as the SIGHUP signal handler;
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<h4 id="_conclusion">Conclusion:</h4>
+<div class="para"><p>As I expected, the modularity in the previous assignment allowed me to expand the functionality of the program to fit the specifications without too much trouble. I didn't have to change the control flow of my program too much, besides handling signals.</p></div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2012-03-08
+</div>
+</div>
+</body>
+</html>
