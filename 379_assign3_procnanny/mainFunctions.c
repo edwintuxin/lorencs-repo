@@ -30,7 +30,7 @@ void readFile(){
 
 	// while config file has lines
 	while (fgets(line, MAX_PROC_NAME+1, configFile) != NULL) {
-		char message[150];
+		char message[256];
 		char name[MAX_PROC_NAME];
 		int sleeptime;
 
@@ -71,13 +71,13 @@ void readFile(){
 }
 
 // kills all previous instances of procnanny
-void killPrevious(int parentID){
+void killPrevious(char* procname, int parentID){
 	int lineCount = 0;
 	int killcount = 0;
 
 	// get a (dynamically alloc'd) list of PIDs with the proc name 'procnanny'
 	// save the count of these PIDs to lineCount
-	int *pidList = getPidList("procnanny", &lineCount);
+	int *pidList = getPidList("procname", &lineCount);
 
 	// if no previous processes found (if count is 1, the only procnanny is the one running)
 	if (lineCount < 2){
@@ -95,10 +95,10 @@ void killPrevious(int parentID){
 
 	// check if there are still other procnanny's left
 	free(pidList);
-	pidList = getPidList("procnanny", &lineCount);
+	pidList = getPidList("procname", &lineCount);
 
-	char output[1000] = "";
-	char kc[10];
+	char output[1048] = "";
+	char kc[16];
 
 	// if more than 1 'procnanny' running, kill was unsuccessful
 	if (lineCount > 2){
@@ -111,7 +111,9 @@ void killPrevious(int parentID){
 		sprintf(kc,"%d",killcount);
 		strcat(output, kc);
 	}
-	strcat(output, " previous 'procnanny' process(es).\n");
+	strcat(output, " previous '");
+	stract(output, procname);
+	strcat(output, "' process(es).\n");
 	timestamp(output, 0);
 
 	free(pidList);
@@ -124,7 +126,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
     int *pidList;
     int pidCount;
     int arraySize = procCount;
-    char pidString[100];
+    char pidString[128];
 
     // dynamic array to hold the pids of children
 	childPool = malloc(procCount*sizeof(child));
@@ -132,7 +134,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
     // for each process in config file, init a child (or children if more than one
     // instance of the process)
 	for(int i = 0; i < procCount; i++){
-		char message[100];
+		char message[128];
 
 		strcpy(procToKill, monitorProcs[i].name);
 		sleepTime = monitorProcs[i].sleep;
@@ -167,13 +169,13 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 			} else if(*pid > 0){
 				childPool[childCount-1].m_pid = pidList[0];	/* set pid of the process the child will be monitoring */
 
-				char writeStr[100];
+				char writeStr[128];
 				strcpy(writeStr, "monitor ");
 				strcat(writeStr, monitorProcs[i].name);
 				strcat(writeStr, " ");
 				strcat(writeStr, pidString);
 				strcat(writeStr, " ");
-				char sleepStr[10];
+				char sleepStr[16];
 				sprintf(sleepStr, "%d", sleepTime);
 				strcat(writeStr, sleepStr);					/* compile "monitor" messages */
 
@@ -206,7 +208,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 				} else if(*pid > 0){
 					childPool[childCount-1].m_pid = pidList[j];
 
-					char writeStr[100];
+					char writeStr[128];
 					strcpy(writeStr, "monitor ");
 					strcat(writeStr, monitorProcs[i].name);
 					strcat(writeStr, " ");
@@ -240,8 +242,8 @@ int* getPidList(char* procName,int *arraySize){
 
 	int *pidList = malloc(currentSize * sizeof(int));
 	FILE *fp;
-	char line[MAX_PROC_NAME + 30];
-	char command[MAX_USER_NAME + 25] = "ps -u ";
+	char line[128];
+	char command[256] = "ps -u ";
 
 	// execute "ps" and "grep" commands
 	strcat(command, getenv("USER"));
@@ -272,6 +274,10 @@ int* getPidList(char* procName,int *arraySize){
 	*arraySize = lineCount;
 
 	return pidList;
+}
+
+void serverLoop(){
+
 }
 
 // parent rechecks for new processes to monitor every 5 secs
@@ -615,7 +621,7 @@ int exists(char* line, int arraySize){
 
 // take string input, timestamps it and print to logfile
 // if p2stdout is 1, also prints to stdout
-void timestamp(char* input, int p2stdout){
+void timestamp(char* input, int p2stdout, FILE* file){
 	FILE* fp = popen("date", "r");
 	if (fp == NULL) {
 		fprintf(stderr, "Failed to run command\n");
@@ -634,8 +640,8 @@ void timestamp(char* input, int p2stdout){
 	if (p2stdout){
 		printf(output);
 	}
-	fprintf(logfile, output);
-	fflush(logfile);
+	fprintf(file, output);
+	fflush(file);
 }
 
 // cleans up allocated memory, file pointers, and pipes

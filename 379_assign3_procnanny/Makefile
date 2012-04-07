@@ -8,11 +8,17 @@
 
 #CFLAGS = -g -O0
 
-procnanny: main.o  mainFunctions.o child.o pipeMessage.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o procnanny main.o mainFunctions.o child.o pipeMessage.o memwatch.o -lm
+procnanny.server: server.o  mainFunctions.o pipeMessage.o memwatch.o
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny server.o mainFunctions.o pipeMessage.o memwatch.o -lm
+	
+procnanny.client: client.o  mainFunctions.o pipeMessage.o memwatch.o
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny client.o mainFunctions.o pipeMessage.o memwatch.o -lm
 
-main.o: main.c memwatch.h
-	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO main.c
+server.o: server.c memwatch.h
+	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO server.c
+	
+client.o: client.c memwatch.h
+	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO client.c
 	
 child.o: child.c child.h memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO child.c
@@ -28,7 +34,8 @@ memwatch.o: memwatch.c memwatch.h
 
 clean:
 	-rm -f *.exe procnanny core
-	-rm -f *.o main core
+	-rm -f *.o server core
+	-rm -f *.o client core
 	-rm -f *.o mainFunctions core
 	-rm -f *.o child core
 	-rm -f *.o pipeMessage core
