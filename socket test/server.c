@@ -47,6 +47,13 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+	maxdesc = getdtablesize();
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
 	setHandler(SIGINT, signalHandler);
 
 	clientCount = 0;
@@ -56,8 +63,8 @@ int main(int argc, char *argv[]){
 
 	struct	sockaddr_in	master, from;
 
-
 	sock = socket (AF_INET, SOCK_STREAM, 0);
+
 	if (sock < 0) {
 		perror ("Server: cannot open master socket");
 		exit (1);
@@ -67,32 +74,46 @@ int main(int argc, char *argv[]){
 	master.sin_addr.s_addr = INADDR_ANY;
 	master.sin_port = htons (myport);
 
-	if (bind (sock, (struct sockaddr*) &master, sizeof (master))) {
-		perror ("Server: cannot bind master socket");
-		exit (1);
+	while ((bind (sock, (struct sockaddr*) &master, sizeof (master))) == -1) {
+		char msg[64];
+		strcpy(msg, "Server: cannot bind master socket on port ");
+		char port[4];
+		sprintf(port, "%d", myport);
+		strcat(msg, port);
+		perror (msg);
+		myport++;
+		master.sin_port = htons (myport);
 	}
 
-	int returnVal = 1;
+	listen(sock, 1);
+
 	while (1) {
-		returnVal = listen (sock, 1);
+		FD_ZERO(&read_from);
+		FD_SET(sock, &read_from);
 
-		if (returnVal == 0){
-			printf("client connected\n");
+		// check if child send message
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		// read message
+		if(ret){
+			fromlength = sizeof (from);
+			clients[clientCount] = accept (sock, (struct sockaddr*) & from, & fromlength);
+
+			if (clients[clientCount] < 0) {
+				perror ("Server: accept failed");
+				exit (1);
+			}
+
+			clientCount++;
+
+			printf("client %d connected, sending msg to all clients\n", clientCount);
+
+			for (int i = 0; i < clientCount; i++){
+				write (clients[i], "hello sir\n", sizeof ("hello sir\n"));
+			}
+
+			listen(sock, 1);
 		}
-
-		fromlength = sizeof (from);
-		clients[clientCount] = accept (sock, (struct sockaddr*) & from, & fromlength);
-
-		if (clients[clientCount] < 0) {
-			perror ("Server: accept failed");
-			exit (1);
-		}
-
-		for (int i = 0; i < clientCount; i++){
-			write (clients[i], "hello sir\n", sizeof ("hello sir\n"));
-		}
-
-		clientCount++;
 	}
 
     return 0;
