@@ -22,7 +22,8 @@
 
 #define MAX_PROC_NAME 128
 #define MAX_USER_NAME 15
-//#define SIGKILL 2
+#define SIGKILL 2
+#define SIGHUP 1
 
 #ifndef MAINFUNCTIONS_H_
 #define MAINFUNCTIONS_H_
