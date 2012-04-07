@@ -43,9 +43,9 @@ typedef struct {
 } child;
 
 void readFile();
-void killPrevious(int parentID);
+void killPrevious(char* procname, int parentID);
 void killProcess(char* procName);
-void timestamp(char* input, int p2stdout);
+void timestamp(char* input, int p2stdout, FILE* file);
 int* getPidList(char* procName, int *arraySize);
 void cleanup();
 void initChildren(int *pid, int *c2p, int *p2c);
