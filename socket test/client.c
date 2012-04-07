@@ -9,6 +9,20 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <termios.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <unistd.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/wait.h>
 
 int myport;
 
@@ -27,7 +41,7 @@ int main(int argc, char* argv[]) {
 	struct	hostent		*host;
 
 	/* Put here the name of the sun on which the server is executed */
-	host = gethostbyname ("ui17");
+	host = gethostbyname ("vmimage");
 
 	if (host == NULL) {
 		perror ("Client: cannot get host description");
@@ -51,11 +65,28 @@ int main(int argc, char* argv[]) {
 		exit (1);
 	}
 
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+	maxdesc = getdtablesize();
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
 	while (1) {
 		char message[100];
-		read (s, message, sizeof (message));
 
-		printf(message);
+		FD_ZERO(&read_from);
+		FD_SET(s, &read_from);
+
+		// check if child send message
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		// read message
+		if(ret){
+			read (s, message, sizeof (message));
+
+			printf(message);
+		}
 
 	}
 
