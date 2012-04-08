@@ -43,10 +43,10 @@ int main(int argc, char* argv[]) {
     receiveConfig();
 
     // initialize the children
-    //initChildren(&pid, c2p, p2c);
+    initChildren(&pid, c2p, p2c);
 
     if(pid == 0){
-    	//childExec(c2p, p2c); 	// child code
+    	childExec(c2p, p2c); 	// child code
     }
 
     // parent loops forever until it is sent SIGINT

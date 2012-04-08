@@ -139,6 +139,7 @@ void timestampToParent(char* input, int *c2p){
 	strcat(output, input);
 
 	// send a message warning parent that it's about to send output text
+
 	msg = init_message("output");
 	write_message(c2p[1],msg);
 	resetMsg();
