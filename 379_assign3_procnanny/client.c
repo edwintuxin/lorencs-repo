@@ -20,6 +20,7 @@ struct pipeMessage* msg;		/* pointer for the pipe messages */
 int killCount;					/* kill count that parent keeps track of */
 char hostname[128];				/* host name of the server */
 int serverPort;					/* port that the server is listening on */
+int sock;						/* socket on which the client communicates with server */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
@@ -37,15 +38,15 @@ int main(int argc, char* argv[]) {
 	strcpy(hostname, argv[1]);
 	sscanf(argv[2], "%d", &serverPort);
 
-	connectToServer();			/* establish socket to server */
+	connectToServer();								/* establish socket to server */
     killPrevious("procnanny.client", getpid()); 	/* kill previous instances of procnanny */
-    /* RECEIVE CONFIG INFO */
+    receiveConfig();
 
     // initialize the children
-    initChildren(&pid, c2p, p2c);
+    //initChildren(&pid, c2p, p2c);
 
     if(pid == 0){
-    	childExec(c2p, p2c); 	// child code
+    	//childExec(c2p, p2c); 	// child code
     }
 
     // parent loops forever until it is sent SIGINT
