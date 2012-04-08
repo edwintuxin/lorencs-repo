@@ -47,7 +47,7 @@ void readFile(){
 		if (!strcmp(name, "procnanny")){
 			strcpy(message, "Warning: You are attempting to monitor the "
 					"'procnanny' process. Exiting to avoid unexpected behavior.\n");
-			printToFile(message, 1, logfile);
+			printToFile(message, 1, 1, logfile);
 
 			procCount = lineCount;
 			cleanup(NULL);
@@ -61,14 +61,14 @@ void readFile(){
 			strcpy(message, "Warning: Ignoring duplicate process '");
 			strcat(message, name);
 			strcat(message, "' in the .config file.\n");
-			printToFile(message, 0, logfile);
+			printToFile(message, 0, 1, logfile);
 			continue;
 		}
 
 		lineCount++;
 
 		strcpy(monitorProcs[lineCount-1].name, name);
-		monitorProcs[lineCount-1].sleep = sleeptime;
+		monitorProcs[lineCount-1].sleep = htonl(sleeptime);
 	}
 
 	//set process count
@@ -121,7 +121,7 @@ void killPrevious(char* procname, int parentID){
 	strcat(output, " previous '");
 	strcat(output, procname);
 	strcat(output, "' process(es).\n");
-	printToFile(output, 0, logfile);
+	printToFile(output, 0, 1, logfile);
 
 	free(pidList);
 }
@@ -193,7 +193,7 @@ void outputStartMsg(){
 	strcat(message, charport);
 	strcat(message, "\n");
 
-	printToFile(message, 1, serverlog);
+	printToFile(message, 1, 1, serverlog);
 }
 
 void serverLoop(){
@@ -255,13 +255,45 @@ void serverLoop(){
 		}
 	}
 
-	/* READ CLIENT MESSAGES HERE */
+	readClientMessages();
+}
+
+// read and handle the messages from the clients
+void readClientMessages(){
+	// setup select
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+
+	maxdesc = getdtablesize();
+
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	for (int i = 0; i < clientCount; i++){
+		FD_ZERO(&read_from);
+		FD_SET(clients[i], &read_from);
+
+		// check if child 'i' has sent a message
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		// read message
+		if(ret){
+			char header[8];
+			read (clients[i], header, sizeof(header));
+			if (!strcmp(header, "output")){
+				char output[256];
+				read (clients[i], output, sizeof(output));
+				printToFile(output, 0, 0, logfile);
+			}
+		}
+	}
 }
 
 // sends the config specs to a client
 void sendConfig(int client){
 	char header[8];
-	strcpy(header, "conf");
+	strcpy(header, "config");
 	write (client, &header, sizeof(header));
 	send (client, &monitorProcs, sizeof(monitorProcs), 0);
 	write (client, &procCount, sizeof(procCount));
@@ -298,7 +330,7 @@ void signalHandler(int signalNum){
 		sprintf(kc,"%d",killCount);
 		strcat(message, kc);
 		strcat(message, " process(es) killed.\n");
-		printToFile(message, 1, logfile);
+		printToFile(message, 1, 1 logfile);
 		*/
 		cleanup();
 		exit(EXIT_SUCCESS);
@@ -310,28 +342,36 @@ void signalHandler(int signalNum){
 		strcpy(message, "Info: Caught SIGHUP. Configuration file '");
 		strcat(message, configPath);
 		strcat(message, "' re-read.\n");
-		printToFile(message, 1, logfile);
+		printToFile(message, 1, 1, logfile);
 	}
 }
 
 // take string input, timestamps it and print to logfile
 // if p2stdout is 1, also prints to stdout
-void printToFile(char* input, int p2stdout, FILE* file){
-	FILE* fp = popen("date", "r");
-	if (fp == NULL) {
-		fprintf(stderr, "Failed to run command 'date'\n");
-		exit(0);
+// if timestamp is 1, it timestamps it
+void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
+	char output[1000];
+
+	if (timestamp){
+		FILE* fp = popen("date", "r");
+		if (fp == NULL) {
+			fprintf(stderr, "Failed to run command 'date'\n");
+			exit(0);
+		}
+
+		char line[30];
+		fgets(line, 128, fp);
+		pclose(fp);
+
+		strcpy(output, "[");
+		strcat(output, line);
+		output[29] = '\0';
+		strcat(output, "] ");
+		strcat(output, input);
+	} else {
+		strcpy(output, input);
 	}
 
-	char line[30];
-	fgets(line, 128, fp);
-	pclose(fp);
-
-	char output[1000] = "[";
-	strcat(output, line);
-	output[29] = '\0';
-	strcat(output, "] ");
-	strcat(output, input);
 	if (p2stdout){
 		printf(output);
 	}

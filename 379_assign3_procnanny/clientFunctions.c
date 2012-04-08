@@ -49,7 +49,7 @@ void connectToServer(){
 		perror ("Client: cannot connect to server");
 		exit (1);
 	}
-	printf("I succesfully connected\n");
+	printf("successfully connected\n");
 }
 
 void receiveConfig(){
@@ -73,11 +73,12 @@ void receiveConfig(){
 		if(ret){
 			read (sock, header, sizeof(header));
 
-			if (!strcmp(header, "conf")){
+			if (!strcmp(header, "config")){
 				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
 				read (sock, &procCount, sizeof(procCount));
 				printf("received config:\n");
 				for(int i = 0; i < procCount; i++){
+					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
 					printf("%s :", monitorProcs[i].name);
 					printf("%d\n", monitorProcs[i].sleep);
 				}
@@ -131,7 +132,7 @@ void killPrevious(char* procname, int parentID){
 	strcat(output, " previous '");
 	strcat(output, procname);
 	strcat(output, "' process(es).\n");
-	//timestamp(output, 0, logfile);
+	timestampToServer(output);
 
 	free(pidList);
 }
@@ -207,7 +208,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			//timestamp(message, 0, logfile);
+			timestampToServer(message);
 			*pid = -1;
 			break;
 		// 1 process found with that name
@@ -338,6 +339,19 @@ void readChildMessages(){
 			} else if (!strcmp(message, "available 0")){
 				idleChildCount++;
 				childPool[i].m_pid = 0;
+			} else if (!strcmp(message, "output")){
+				// receive the output string from chlid
+				char output[256];
+				memset(output, 0, 256);
+				msg = read_message(childPool[i].c2p[0]);
+				strcpy(output, msg->body);
+				resetMsg();
+
+				// send it to server
+				char header[8];
+				strcpy(header, "output");
+				write (sock, header, sizeof(header));
+				write (sock, output, sizeof(output));
 			}
 		}
 
@@ -372,7 +386,7 @@ void rescanProcs(){
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			//timestamp(message, 0, logfile);
+			timestampToServer(message);
 			pid = -1;
 			break;
 		// 1 process found with that name
@@ -568,6 +582,33 @@ void waitForChildren(){
 		}
 	}
 }
+
+// timestamps a message and passes it to server
+void timestampToServer(char* input){
+	FILE* fp = popen("date", "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command 'date'\n");
+		exit(0);
+	}
+
+	char line[30];
+	fgets(line, 128, fp);
+	pclose(fp);
+
+	char output[256] = "[";
+	strcat(output, line);
+	output[29] = '\0';
+	strcat(output, "] ");
+	strcat(output, input);
+
+	// send an "output" header
+	// and the output string
+	char header[8];
+	strcpy(header, "output");
+	write (sock, header, sizeof(header));
+	write (sock, output, sizeof(output));
+}
+
 
 // returns true if the string 'line' exists in the processNames array
 // arraySize is passed because the check is done as the array is being
