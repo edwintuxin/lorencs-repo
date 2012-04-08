@@ -45,12 +45,13 @@ void serverLoop();
 void signalHandler(int signalNum);
 void cleanup();
 void setHandler(int sigType, void* handler, int i);
-void printToFile(char* input, int p2stdout, FILE* file);
+void printToFile(char* input, int p2stdout, int timestamp, FILE* file);
 int exists(char* line, int arraySize);
 void resetMsg();
 void killPrevious(char* procname, int parentID);
 int* getPidList(char* procName,int *arraySize);
 void sendConfig(int client);
+void readClientMessages();
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);

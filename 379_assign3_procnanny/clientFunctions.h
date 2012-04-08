@@ -58,6 +58,7 @@ void resetMsg();
 void killPrevious(char* procname, int parentID);
 int* getPidList(char* procName,int *arraySize);
 void connectToServer();
+void timestampToServer(char* input);
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);

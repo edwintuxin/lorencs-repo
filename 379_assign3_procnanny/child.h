@@ -16,3 +16,4 @@
 void childExec(int *c2p, int *p2c);
 void childExit();
 void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, int *p2c);
+void timestampToParent(char* input, int *c2p);

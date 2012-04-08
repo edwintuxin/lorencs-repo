@@ -15,19 +15,14 @@ struct pipeMessage* msg;
 int msgVal;								/* child's return value */
 
 void childExec(int *c2p, int *p2c){
-	// ignore interrupts and sighups as the parent should handle those
-	signal(SIGINT, SIG_IGN);
-	signal(SIGHUP, SIG_IGN);
-
 	while(1){
-
 		char message[256];
 		memset(message, 0, 256);
 		msg = read_message(p2c[0]);
 		strcpy(message, msg->body);
 		resetMsg();
 
-		//printf("message is: %s\n", message);
+
 		if (!strcmp(message, "exit")){
 			childExit(c2p);
 		} else if (!strncmp(message, "monitor", 7)){
@@ -38,11 +33,10 @@ void childExec(int *c2p, int *p2c){
 			sscanf(message, "monitor %s %s %d", procToKill, pidToKill, &sleepTime);
 			monitorProcess(procToKill, pidToKill, sleepTime, c2p, p2c);
 		}
-
 	}
 }
 
-// cleanup and inform parent that chidl is exiting
+// cleanup and inform parent that child is exiting
 void childExit(int *c2p){
 	msg = init_message("exit complete");
 	write_message(c2p[1],msg);
@@ -64,7 +58,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 	strcat(output, "' (PID ");
 	strcat(output, pidToKill);
 	strcat(output, ").\n");
-	//timestamp(output, 0);
+	timestampToParent(output, c2p);
 
 	//go to sleep
 	sleep(sleepTime);
@@ -83,7 +77,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 		sprintf(string, "%d", sleepTime);
 		strcat(output, string);
 		strcat(output, " seconds.\n");
-		//timestamp(output, 0);
+		timestampToParent(output, c2p);
 		msgVal = 0;
 	} else {
 		int pidToKillInt;
@@ -111,7 +105,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 			strcat(output, ").\n");
 			msgVal = 0;
 		}
-		//timestamp(output, 0);
+		timestampToParent(output, c2p);
 	}
 
 	// send message to parent that child is available, followed by
@@ -125,4 +119,32 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 	resetMsg();
 
 	free(pidList);
+}
+
+void timestampToParent(char* input, int *c2p){
+	FILE* fp = popen("date", "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command 'date'\n");
+		exit(0);
+	}
+
+	char line[30];
+	fgets(line, 128, fp);
+	pclose(fp);
+
+	char output[256] = "[";
+	strcat(output, line);
+	output[29] = '\0';
+	strcat(output, "] ");
+	strcat(output, input);
+
+	// send a message warning parent that it's about to send output text
+	msg = init_message("output");
+	write_message(c2p[1],msg);
+	resetMsg();
+
+	// send the output text
+	msg = init_message(output);
+	write_message(c2p[1],msg);
+	resetMsg();
 }
