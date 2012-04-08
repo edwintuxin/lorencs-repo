@@ -121,7 +121,7 @@ void killPrevious(char* procname, int parentID){
 	strcat(output, " previous '");
 	strcat(output, procname);
 	strcat(output, "' process(es).\n");
-	timestamp(output, 0, logfile);
+	printToFile(output, 0, logfile);
 
 	free(pidList);
 }
@@ -262,7 +262,7 @@ void setHandler(int sigType, void* handler, int i){
 
 // handles the SIGINT and SIGHUP signals
 void signalHandler(int signalNum){
-	if (signalNum == SIGINT){
+	/*if (signalNum == SIGINT){
 		// send exit message to all children
 		for (int i = 0; i < childCount; i++){
 			msg = init_message("exit");
@@ -284,7 +284,7 @@ void signalHandler(int signalNum){
 
 		cleanup();
 		exit(EXIT_SUCCESS);
-	}
+	}*/
 	if (signalNum == SIGHUP){
 		// re-read file, print message
 		readFile();
