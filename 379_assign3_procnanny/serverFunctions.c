@@ -82,6 +82,7 @@ void killPrevious(char* procname, int parentID){
 	int lineCount = 0;
 	int killcount = 0;
 
+	//printf("cleaning up %s\n", procname);
 	// get a (dynamically alloc'd) list of PIDs with the proc name 'procnanny'
 	// save the count of these PIDs to lineCount
 	int *pidList = getPidList(procname, &lineCount);
@@ -95,6 +96,7 @@ void killPrevious(char* procname, int parentID){
 	// kill the processes and count how many were killed
 	for(int i=0; i < lineCount; i++){
 		if (pidList[i] != parentID){
+			//printf("killing %d\n", pidList[i]);
 			kill(pidList[i], SIGKILL);
 			killcount++;
 		}
@@ -135,12 +137,15 @@ int* getPidList(char* procName,int *arraySize){
 	int *pidList = malloc(currentSize * sizeof(int));
 	FILE *fp;
 	char line[128];
-	char command[256] = "ps -u ";
+	char command[256] = "ps n -o pid,command -u ";
+
 
 	// execute "ps" and "grep" commands
 	strcat(command, getenv("USER"));
 	strcat(command, " | grep -w ");
 	strcat(command, procName);
+	strcat(command, " | grep -v 'grep'");
+	//printf("running %s\n", command);
 
 	// open the command for reading
 	fp = popen(command, "r");
@@ -151,6 +156,7 @@ int* getPidList(char* procName,int *arraySize){
 
 	// Read the output a line at a time, save the pid's of the matching processes
 	while (fgets(line, MAX_PROC_NAME + 30, fp)) {
+		//printf(line);
 		lineCount++;
 		// realloc if more space needed
 		if (lineCount > currentSize){
@@ -184,7 +190,6 @@ void outputStartMsg(){
 	fgets(line, 128, fp);
 	pclose(fp);
 	line[strlen(line)-1] = '\0';
-	//printf("line is %s", line);
 
 	strcat(message, line);
 	strcat(message, ", port ");
@@ -253,9 +258,9 @@ void serverLoop(){
 			clientCount++;
 			listen(sock, 32);
 		}
-	}
 
-	readClientMessages();
+		readClientMessages();
+	}
 }
 
 // read and handle the messages from the clients
@@ -269,7 +274,6 @@ void readClientMessages(){
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
-
 	for (int i = 0; i < clientCount; i++){
 		FD_ZERO(&read_from);
 		FD_SET(clients[i], &read_from);
@@ -372,9 +376,9 @@ void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
 		strcpy(output, input);
 	}
 
-	if (p2stdout){
+	//if (p2stdout){
 		printf(output);
-	}
+	//}
 	fprintf(file, output);
 	fflush(file);
 }

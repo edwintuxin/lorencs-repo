@@ -49,7 +49,6 @@ void connectToServer(){
 		perror ("Client: cannot connect to server");
 		exit (1);
 	}
-	printf("successfully connected\n");
 }
 
 void receiveConfig(){
@@ -76,13 +75,13 @@ void receiveConfig(){
 			if (!strcmp(header, "config")){
 				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
 				read (sock, &procCount, sizeof(procCount));
-				printf("received config:\n");
 				for(int i = 0; i < procCount; i++){
 					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
 					printf("%s :", monitorProcs[i].name);
 					printf("%d\n", monitorProcs[i].sleep);
 				}
 			}
+		break;
 		}
 
 	}
@@ -119,7 +118,7 @@ void killPrevious(char* procname, int parentID){
 	char kc[16];
 
 	// if more than 1 'procnanny' running, kill was unsuccessful
-	if (lineCount > 2){
+	if (lineCount > 1){
 		strcat(output, "Info: Unable to clean up ");
 		sprintf(kc,"%d", lineCount - 1);
 		strcat(output, kc);
@@ -146,12 +145,13 @@ int* getPidList(char* procName,int *arraySize){
 	int *pidList = malloc(currentSize * sizeof(int));
 	FILE *fp;
 	char line[128];
-	char command[256] = "ps -u ";
+	char command[256] = "ps n -o pid,command -u ";
 
 	// execute "ps" and "grep" commands
 	strcat(command, getenv("USER"));
 	strcat(command, " | grep -w ");
 	strcat(command, procName);
+	strcat(command, " | grep -v 'grep'");
 
 	// open the command for reading
 	fp = popen(command, "r");
@@ -188,6 +188,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
     int arraySize = procCount;
     char pidString[128];
 
+    printf("procCount is %d\n", procCount);
     // dynamic array to hold the pids of children
 	childPool = malloc(procCount*sizeof(child));
 
@@ -609,6 +610,20 @@ void timestampToServer(char* input){
 	write (sock, output, sizeof(output));
 }
 
+// copies the hostname to the specified string
+void getHostName(char *name){
+	FILE* fp = popen("hostname", "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command\n");
+		exit(0);
+	}
+	char line[32];
+	fgets(line, 128, fp);
+	pclose(fp);
+	line[strlen(line)-1] = '\0';
+
+	strcpy(name, line);
+}
 
 // returns true if the string 'line' exists in the processNames array
 // arraySize is passed because the check is done as the array is being
