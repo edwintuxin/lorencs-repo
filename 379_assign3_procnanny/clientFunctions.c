@@ -74,8 +74,8 @@ void receiveConfig(){
 			read (sock, header, sizeof(header));
 
 			if (!strcmp(header, "conf")){
-				recv (sock, &monitorProcs, sizeof(monitorProcs));
-				read (sock, &procCount, size(procCount));
+				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
+				read (sock, &procCount, sizeof(procCount));
 				printf("received config:\n");
 				for(int i = 0; i < procCount; i++){
 					printf("%s :", monitorProcs[i].name);

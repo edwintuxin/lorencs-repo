@@ -262,9 +262,9 @@ void serverLoop(){
 void sendConfig(int client){
 	char header[8];
 	strcpy(header, "conf");
-	write (client, header, sizeof(header));
-	send (client, monitorProcs, sizeof(monitorProcs));
-	write (client, procCount, sizeof(procCount));
+	write (client, &header, sizeof(header));
+	send (client, &monitorProcs, sizeof(monitorProcs), 0);
+	write (client, &procCount, sizeof(procCount));
 }
 
 // sets the handler '*handler' to handle the 'sigType' signal
