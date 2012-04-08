@@ -8,11 +8,11 @@
 
 #CFLAGS = -g -O0
 
-procnanny.server: server.o  sharedFunctions.o pipeMessage.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o procnanny server.o sharedFunctions.o pipeMessage.o memwatch.o -lm
+procnanny.server: server.o  serverFunctions.o pipeMessage.o memwatch.o
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny server.o serverFunctions.o pipeMessage.o memwatch.o -lm
 	
-procnanny.client: client.o  sharedFunctions.o pipeMessage.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o procnanny client.o sharedFunctions.o pipeMessage.o memwatch.o -lm
+procnanny.client: client.o  clientFunctions.o pipeMessage.o memwatch.o
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny client.o clientFunctions.o pipeMessage.o memwatch.o -lm
 
 server.o: server.c memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO server.c
@@ -23,8 +23,11 @@ client.o: client.c memwatch.h
 child.o: child.c child.h memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO child.c
 	
-sharedFunctions.o: sharedFunctions.c sharedFunctions.h memwatch.h
-	gcc $(CFLAGS) -Wall -std=c99 -c -D_XOPEN_SOURCE -DMEMWATCH -DMW_STDIO sharedFunctions.c
+serverFunctions.o: serverFunctions.c serverFunctions.h memwatch.h
+	gcc $(CFLAGS) -Wall -std=c99 -c -D_XOPEN_SOURCE -DMEMWATCH -DMW_STDIO serverFunctions.c
+	
+clientFunctions.o: clientFunctions.c clientFunctions.h memwatch.h
+	gcc $(CFLAGS) -Wall -std=c99 -c -D_XOPEN_SOURCE -DMEMWATCH -DMW_STDIO clientFunctions.c
 	
 pipeMessage.o: pipeMessage.c pipeMessage.h memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO pipeMessage.c
