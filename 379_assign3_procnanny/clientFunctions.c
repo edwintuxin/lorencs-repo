@@ -58,7 +58,7 @@ void killPrevious(char* procname, int parentID){
 
 	// get a (dynamically alloc'd) list of PIDs with the proc name 'procnanny'
 	// save the count of these PIDs to lineCount
-	int *pidList = getPidList("procname", &lineCount);
+	int *pidList = getPidList(procname, &lineCount);
 
 	// if no previous processes found (if count is 1, the only procnanny is the one running)
 	if (lineCount < 2){
@@ -76,7 +76,7 @@ void killPrevious(char* procname, int parentID){
 
 	// check if there are still other procnanny's left
 	free(pidList);
-	pidList = getPidList("procname", &lineCount);
+	pidList = getPidList(procname, &lineCount);
 
 	char output[1048] = "";
 	char kc[16];
