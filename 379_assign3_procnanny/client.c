@@ -5,13 +5,11 @@
  * Created on January 29, 2012, 1:44 PM
  */
 
-#include "mainFunctions.h"
+#include "clientFunctions.h"
 #include "memwatch.h"
 
 /* Global variables */
 int sleepTime;					/* amount of time to sleep to pass to child */
-char configPath[128];			/* path to the config file */
-FILE *logfile;					/* pointer to log file */
 int procCount;					/* count of processes to monitor */
 procs monitorProcs[128];		/* array of structs */
 child *childPool;				/* pool of all children */
@@ -20,7 +18,8 @@ int childCount;					/* current count of children in pool */
 int idleChildCount;				/* count of any idle children */
 struct pipeMessage* msg;		/* pointer for the pipe messages */
 int killCount;					/* kill count that parent keeps track of */
-struct sigaction* newAction[2];	/* action struct to use with signal handler */
+char hostname[128];				/* host name of the server */
+int serverPort;					/* port that the server is listening on */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
@@ -30,20 +29,17 @@ int main(int argc, char* argv[]) {
 	int c2p[2];			/* the set of pipes that will be passed to each child */
 	int p2c[2];
 
-	// setup signal handlers
-	setHandler(SIGINT, signalHandler, 0);
-	setHandler(SIGHUP, signalHandler, 1);
-
-	if (argc != 2){
+	if (argc != 3){
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
 		exit(0);
 	}
-	strncpy(configPath, argv[1], strlen(argv[1]));
 
-	logfile = fopen(getenv("PROCNANNYLOGS"), "w");
+	strcpy(hostname, argv[1]);
+	sscanf(argv[2], "%d", &serverPort);
 
-    readFile();					/* read in the config file */
+	connectToServer();			/* establish socket to server */
     killPrevious(getpid()); 	/* kill previous instances of procnanny */
+    /* RECEIVE CONFIG INFO */
 
     // initialize the children
     initChildren(&pid, c2p, p2c);

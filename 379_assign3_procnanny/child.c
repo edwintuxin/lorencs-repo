@@ -7,7 +7,7 @@
  *  Contains the code that is to be executed by the child
  */
 
-#include "mainFunctions.h"
+#include "clientFunctions.h"
 #include "memwatch.h"
 #include "child.h"
 
