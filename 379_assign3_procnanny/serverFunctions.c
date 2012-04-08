@@ -248,13 +248,23 @@ void serverLoop(){
 				exit (1);
 			}
 
+			sendConfig(clients[clientCount]);
+
 			clientCount++;
-			printf("client %d succesfully connected\n", clientCount);
 			listen(sock, 32);
 		}
 	}
 
 	/* READ CLIENT MESSAGES HERE */
+}
+
+// sends the config specs to a client
+void sendConfig(int client){
+	char header[8];
+	strcpy(header, "conf");
+	write (client, header, sizeof(header));
+	send (client, monitorProcs, sizeof(monitorProcs));
+	write (client, procCount, sizeof(procCount));
 }
 
 // sets the handler '*handler' to handle the 'sigType' signal

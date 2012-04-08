@@ -20,9 +20,9 @@ extern struct pipeMessage* msg;
 extern int killCount;
 extern char hostname[128];
 extern int serverPort;
+extern int sock;
 
 void connectToServer(){
-	int	s;
 	struct	sockaddr_in	server;
 	struct	hostent		*host;
 
@@ -33,9 +33,9 @@ void connectToServer(){
 	}
 
 	// establish socket
-	s = socket (AF_INET, SOCK_STREAM, 0);
+	sock = socket (AF_INET, SOCK_STREAM, 0);
 
-	if (s < 0) {
+	if (sock < 0) {
 		perror ("Client: cannot open socket");
 		exit (1);
 	}
@@ -45,11 +45,46 @@ void connectToServer(){
 	server.sin_family = host->h_addrtype;
 	server.sin_port = htons (serverPort);
 
-	if (connect (s, (struct sockaddr*) & server, sizeof (server))) {
+	if (connect (sock, (struct sockaddr*) & server, sizeof (server))) {
 		perror ("Client: cannot connect to server");
 		exit (1);
 	}
 	printf("I succesfully connected\n");
+}
+
+void receiveConfig(){
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+	maxdesc = getdtablesize();
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	while (1) {
+		char header[8];
+
+		FD_ZERO(&read_from);
+		FD_SET(sock, &read_from);
+
+		// check if child send message
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		// read message
+		if(ret){
+			read (sock, header, sizeof(header));
+
+			if (!strcmp(header, "conf")){
+				recv (sock, &monitorProcs, sizeof(monitorProcs));
+				read (sock, &procCount, size(procCount));
+				printf("received config:\n");
+				for(int i = 0; i < procCount; i++){
+					printf("%s :", monitorProcs[i].name);
+					printf("%d\n", monitorProcs[i].sleep);
+				}
+			}
+		}
+
+	}
 }
 
 // kills all previous instances of procnanny
@@ -263,7 +298,6 @@ void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
 		readChildMessages();	/* check if any children have left messages and process them */
-
 		rescanProcs();			/* look for the processes in the most recent config file */
 	}
 }
