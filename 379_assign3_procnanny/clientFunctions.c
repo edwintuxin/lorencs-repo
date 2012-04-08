@@ -21,7 +21,7 @@ extern int killCount;
 extern char hostname[128];
 extern int serverPort;
 
-void connectToHost(){
+void connectToServer(){
 	int	s;
 	struct	sockaddr_in	server;
 	struct	hostent		*host;
@@ -40,8 +40,8 @@ void connectToHost(){
 		exit (1);
 	}
 
-	bzero (&server, sizeof (server));
-	bcopy (host->h_addr, & (server.sin_addr), host->h_length);
+	bzero(&server, sizeof (server));
+	bcopy(host->h_addr, & (server.sin_addr), host->h_length);
 	server.sin_family = host->h_addrtype;
 	server.sin_port = htons (serverPort);
 
@@ -49,6 +49,7 @@ void connectToHost(){
 		perror ("Client: cannot connect to server");
 		exit (1);
 	}
+	printf("I succesfully connected\n");
 }
 
 // kills all previous instances of procnanny
@@ -95,7 +96,7 @@ void killPrevious(char* procname, int parentID){
 	strcat(output, " previous '");
 	strcat(output, procname);
 	strcat(output, "' process(es).\n");
-	timestamp(output, 0, logfile);
+	//timestamp(output, 0, logfile);
 
 	free(pidList);
 }
@@ -171,7 +172,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			timestamp(message, 0, logfile);
+			//timestamp(message, 0, logfile);
 			*pid = -1;
 			break;
 		// 1 process found with that name
@@ -337,7 +338,7 @@ void rescanProcs(){
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
 			strcat(message, "' processes found.\n");
-			timestamp(message, 0, logfile);
+			//timestamp(message, 0, logfile);
 			pid = -1;
 			break;
 		// 1 process found with that name

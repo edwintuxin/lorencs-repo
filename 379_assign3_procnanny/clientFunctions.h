@@ -20,6 +20,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include "memwatch.h"
 #include "pipeMessage.h"
 #include "child.h"
@@ -56,6 +57,7 @@ int exists(char* line, int arraySize);
 void resetMsg();
 void killPrevious(char* procname, int parentID);
 int* getPidList(char* procName,int *arraySize);
+void connectToServer();
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);
@@ -65,3 +67,5 @@ int strnlen();
 int kill(pid_t pid, int sig);
 int isalpha(int character);
 int getdtablesize();
+void bzero();
+void bcopy();

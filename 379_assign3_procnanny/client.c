@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 	sscanf(argv[2], "%d", &serverPort);
 
 	connectToServer();			/* establish socket to server */
-    killPrevious(getpid()); 	/* kill previous instances of procnanny */
+    killPrevious("procnanny.client", getpid()); 	/* kill previous instances of procnanny */
     /* RECEIVE CONFIG INFO */
 
     // initialize the children
