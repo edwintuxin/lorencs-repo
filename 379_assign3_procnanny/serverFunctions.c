@@ -183,13 +183,17 @@ void outputStartMsg(){
 	char line[32];
 	fgets(line, 128, fp);
 	pclose(fp);
+	line[strlen(line)-1] = '\0';
+	//printf("line is %s", line);
 
 	strcat(message, line);
 	strcat(message, ", port ");
 	char charport[16];
 	sprintf(charport, "%d", serverPort);
+	strcat(message, charport);
+	strcat(message, "\n");
 
-	printToFile();
+	printToFile(message, 1, serverlog);
 }
 
 void serverLoop(){
@@ -200,7 +204,7 @@ void serverLoop(){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	int	fromlength, number, outnum;
+	socklen_t fromlength;
 	struct	sockaddr_in	master, from;
 
 	// setup listening socket
@@ -220,6 +224,8 @@ void serverLoop(){
 		master.sin_port = htons (serverPort);
 	}
 
+	// print server startup message (once the port is known)
+	outputStartMsg();
 	// setup socket for listening
 	listen(sock, 32);
 
@@ -243,6 +249,7 @@ void serverLoop(){
 			}
 
 			clientCount++;
+			printf("client %d succesfully connected\n", clientCount);
 			listen(sock, 32);
 		}
 	}
@@ -262,7 +269,8 @@ void setHandler(int sigType, void* handler, int i){
 
 // handles the SIGINT and SIGHUP signals
 void signalHandler(int signalNum){
-	/*if (signalNum == SIGINT){
+	if (signalNum == SIGINT){
+		/*
 		// send exit message to all children
 		for (int i = 0; i < childCount; i++){
 			msg = init_message("exit");
@@ -281,10 +289,10 @@ void signalHandler(int signalNum){
 		strcat(message, kc);
 		strcat(message, " process(es) killed.\n");
 		printToFile(message, 1, logfile);
-
+		*/
 		cleanup();
 		exit(EXIT_SUCCESS);
-	}*/
+	}
 	if (signalNum == SIGHUP){
 		// re-read file, print message
 		readFile();

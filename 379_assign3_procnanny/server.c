@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 	clientCount = 0;
 
 	if (argc != 2){
+		//printf("argc: %d\n", argc);
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
 		exit(0);
 	}
@@ -40,7 +41,6 @@ int main(int argc, char* argv[]) {
     readFile();										/* read in the config file */
     killPrevious("procnanny.server", getpid()); 	/* kill previous instances of procnanny */
 
-    outputStartMsg();
     // server loops forever until it is sent SIGINT
     serverLoop();
 
