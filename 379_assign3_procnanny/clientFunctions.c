@@ -130,7 +130,11 @@ void killPrevious(char* procname, int parentID){
 	}
 	strcat(output, " previous '");
 	strcat(output, procname);
-	strcat(output, "' process(es).\n");
+	strcat(output, "' process(es) on node ");
+	char hostname[32];
+	getHostName(hostname);
+	strcat(output, hostname);
+	strcat(output, ".\n");
 	timestampToServer(output);
 
 	free(pidList);
@@ -188,7 +192,7 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
     int arraySize = procCount;
     char pidString[128];
 
-    printf("procCount is %d\n", procCount);
+    //printf("procCount is %d\n", procCount);
     // dynamic array to hold the pids of children
 	childPool = malloc(procCount*sizeof(child));
 
@@ -299,9 +303,42 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
+		readServerMessages();
 		readChildMessages();	/* check if any children have left messages and process them */
 		rescanProcs();			/* look for the processes in the most recent config file */
 	}
+}
+
+void readServerMessages(){
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+	maxdesc = getdtablesize();
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	char header[8];
+
+		FD_ZERO(&read_from);
+		FD_SET(sock, &read_from);
+
+		// check if child send message
+		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+		// read message
+		if(ret){
+			read (sock, header, sizeof(header));
+
+			if (!strcmp(header, "config")){
+				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
+				read (sock, &procCount, sizeof(procCount));
+				for(int i = 0; i < procCount; i++){
+					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
+					printf("%s :", monitorProcs[i].name);
+					printf("%d\n", monitorProcs[i].sleep);
+				}
+			}
+		}
 }
 
 // check (once) if any children have left messages and process them
@@ -386,7 +423,11 @@ void rescanProcs(){
 			//print "no process found" message
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
-			strcat(message, "' processes found.\n");
+			strcat(message, "' processes found on node ");
+			char hostname[32];
+			getHostName(hostname);
+			strcat(message, hostname);
+			strcat(message, ".\n");
 			timestampToServer(message);
 			pid = -1;
 			break;

@@ -47,6 +47,7 @@ typedef struct {
 
 void initChildren(int *pid, int *_c2p, int *_p2c);
 void parentLoop();
+void readServerMessages();
 void readChildMessages();
 void rescanProcs();
 int getIdleChildIndex();
