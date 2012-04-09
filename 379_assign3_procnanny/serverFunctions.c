@@ -274,6 +274,7 @@ void readClientMessages(){
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
+
 	for (int i = 0; i < clientCount; i++){
 		FD_ZERO(&read_from);
 		FD_SET(clients[i], &read_from);
@@ -347,6 +348,11 @@ void signalHandler(int signalNum){
 		strcat(message, configPath);
 		strcat(message, "' re-read.\n");
 		printToFile(message, 1, 1, logfile);
+
+		//send new config file to each client
+		for (int i = 0; i < clientCount; i++){
+			sendConfig(clients[i]);
+		}
 	}
 }
 

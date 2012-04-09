@@ -57,7 +57,11 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 	strcat(output, procToKill);
 	strcat(output, "' (PID ");
 	strcat(output, pidToKill);
-	strcat(output, ").\n");
+	strcat(output, ") on node ");
+	char hostname[32];
+	getHostName(hostname);
+	strcat(output, hostname);
+	strcat(output, ".\n");
 	timestampToParent(output, c2p);
 
 	//go to sleep
@@ -73,7 +77,11 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 		strcat(output, pidToKill);
 		strcat(output, " (");
 		strcat(output, procToKill);
-		strcat(output, ") has exited before exceeding ");
+		strcat(output, ") on ");
+		char hostname[32];
+		getHostName(hostname);
+		strcat(output, hostname);
+		strcat(output, " has exited before exceeding ");
 		sprintf(string, "%d", sleepTime);
 		strcat(output, string);
 		strcat(output, " seconds.\n");
@@ -91,7 +99,11 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 			strcat(output, pidToKill);
 			strcat(output, " (");
 			strcat(output, procToKill);
-			strcat(output, ") killed after exceeding ");
+			strcat(output, ") on ");
+			char hostname[32];
+			getHostName(hostname);
+			strcat(output, hostname);
+			strcat(output, "killed after exceeding ");
 			sprintf(string, "%d", sleepTime);
 			strcat(output, string);
 			strcat(output, " seconds.\n");
@@ -102,7 +114,11 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 			strcat(output, pidToKill);
 			strcat(output, " (");
 			strcat(output, procToKill);
-			strcat(output, ").\n");
+			strcat(output, ") on node ");
+			char hostname[32];
+			getHostName(hostname);
+			strcat(output, hostname);
+			strcat(output, ".\n");
 			msgVal = 0;
 		}
 		timestampToParent(output, c2p);
