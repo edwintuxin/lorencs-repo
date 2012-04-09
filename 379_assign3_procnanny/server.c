@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
 	if (argc != 2){
 		//printf("argc: %d\n", argc);
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
+		cleanup();
 		exit(0);
 	}
 	strncpy(configPath, argv[1], strlen(argv[1]));

@@ -50,7 +50,7 @@ void readFile(){
 			printToFile(message, 1, 1, logfile);
 
 			procCount = lineCount;
-			cleanup(NULL);
+			cleanup();
 			exit(0);
 		}
 
@@ -151,6 +151,7 @@ int* getPidList(char* procName,int *arraySize){
 	fp = popen(command, "r");
 	if (fp == NULL) {
 		fprintf(stderr, "Failed to run command\n");
+		cleanup();
 		exit(0);
 	}
 
@@ -216,6 +217,7 @@ void serverLoop(){
 	sock = socket (AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror ("Server: cannot open master socket");
+		cleanup();
 		exit (1);
 	}
 
@@ -250,6 +252,7 @@ void serverLoop(){
 
 			if (clients[clientCount] < 0) {
 				perror ("Server: accept failed");
+				cleanup();
 				exit (1);
 			}
 
@@ -366,6 +369,7 @@ void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
 		FILE* fp = popen("date", "r");
 		if (fp == NULL) {
 			fprintf(stderr, "Failed to run command 'date'\n");
+			cleanup();
 			exit(0);
 		}
 

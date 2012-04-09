@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 
 	if (argc != 3){
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
+		cleanup();
 		exit(0);
 	}
 
