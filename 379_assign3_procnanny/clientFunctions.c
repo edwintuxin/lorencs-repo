@@ -337,6 +337,8 @@ void readServerMessages(){
 					printf("%s :", monitorProcs[i].name);
 					printf("%d\n", monitorProcs[i].sleep);
 				}
+			} else if (!strcmp(header, "exit")){
+				cleanExit();
 			}
 		}
 }
@@ -688,6 +690,30 @@ void resetMsg(){
 	free(msg->body);
 	free(msg);
 	msg = NULL;
+}
+
+void cleanExit(){
+
+	// send exit message to all children
+	for (int i = 0; i < childCount; i++){
+		msg = init_message("exit");
+		write_message(childPool[i].p2c[1],msg);
+		resetMsg();
+	}
+
+	// wait for the children to send their kill messages ("available")
+	// and their "exit complete" messages
+	waitForChildren();
+
+	// send "exit complete" message to server
+	char header[8];
+	strcpy(header, "exit");
+	write(sock, header, sizeof(header));
+	int killCountNet = htonl(killCount);
+	write(sock, killCountNet, sizeof(killCountNet));
+
+	cleanup();
+	exit(1);
 }
 
 // cleans up allocated memory, file pointers, and pipes
