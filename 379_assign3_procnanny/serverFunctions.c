@@ -235,7 +235,7 @@ void serverLoop(){
 	// setup socket for listening
 	listen(sock, 32);
 
-	// constnatly check for new connections on the socket
+	// constantly check for new connections on the socket
 	// as well as messages from clients
 	while (1) {
 		FD_ZERO(&read_from);
@@ -336,9 +336,13 @@ void signalHandler(int signalNum){
 		char message[100] = "Info: Caught SIGINT. Exiting cleanly. ";
 		sprintf(kc,"%d",killCount);
 		strcat(message, kc);
-		strcat(message, " process(es) killed on ");
-		strcat(message, nodenames);
-		strcat(message, ".\n");
+		if (killCount > 0){
+			strcat(message, " process(es) killed on ");
+			strcat(message, nodenames);
+			strcat(message, ".\n");
+		} else {
+			strcat(message, " process(es) killed.\n");
+		}
 
 		printToFile(message, 1, 1, logfile);
 
@@ -369,10 +373,15 @@ void waitForClients(char* nodenames){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
+	int exitedClients[32] = {[0 ... 31] = -1};
 	int exited = 0; 	/* count of exited clients */
 	// while not all children have "exit completed"
 	while (exited < clientCount){
 		for (int i = 0; i < clientCount; i++){
+			if (clientExited(i, exitedClients)){
+				continue;
+			}
+
 			FD_ZERO(&read_from);
 			FD_SET(clients[i], &read_from);
 
@@ -381,7 +390,9 @@ void waitForClients(char* nodenames){
 
 			// read message
 			if(ret){
-				printf("client %d has shutdown", i);
+				printf("client %d has shutdown\n", i);
+				exitedClients[exited] = i;
+
 				char header[8];
 
 				// read message
@@ -411,6 +422,18 @@ void waitForClients(char* nodenames){
 			}
 		}
 	}
+}
+
+int clientExited(int num, int exitedClients[32]){
+	int returnVal = 0;
+
+	for (int i = 0; i < 32; i++){
+		if (exitedClients[i] == num){
+			return 1;
+		}
+	}
+
+	return returnVal;
 }
 
 // take string input, timestamps it and print to logfile
