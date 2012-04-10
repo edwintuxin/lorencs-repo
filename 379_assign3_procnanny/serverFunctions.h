@@ -22,9 +22,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "memwatch.h"
-#include "pipeMessage.h"
-
-
 
 #ifndef SERVERFUNCTIONS_H_
 #define SERVERFUNCTIONS_H_
@@ -52,6 +49,7 @@ void killPrevious(char* procname, int parentID);
 int* getPidList(char* procName,int *arraySize);
 void sendConfig(int client);
 void readClientMessages();
+void waitForClients(char* nodenames);
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);

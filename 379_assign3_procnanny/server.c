@@ -20,6 +20,7 @@ int clientCount;				/* count of currently connected clients */
 int sock;						/* socket on which the server will listen for clients */
 int clients[32];				/* array of sockets to a max of 32 clients */
 int serverPort;					/* port that the server will attempt to listen on */
+int killCount;					/* kill count of all clients (calc'd at the end) */
 
 int main(int argc, char* argv[]) {
 	// setup signal handlers
@@ -27,6 +28,7 @@ int main(int argc, char* argv[]) {
 	setHandler(SIGHUP, signalHandler, 1);
 	serverPort = 1337;
 	clientCount = 0;
+	killCount = 0;
 
 	if (argc != 2){
 		//printf("argc: %d\n", argc);

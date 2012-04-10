@@ -9,10 +9,10 @@
 #CFLAGS = -g -O0
 
 server: server.o  serverFunctions.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o -DMEMWATCH -DMW_STDIO procnanny.server server.o serverFunctions.o memwatch.o -lm
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny.server server.o serverFunctions.o memwatch.o -lm
 	
 client: client.o  clientFunctions.o child.o pipeMessage.o memwatch.o
-	gcc $(CFLAGS) -Wall -std=c99 -o -DMEMWATCH -DMW_STDIO procnanny.client client.o clientFunctions.o child.o pipeMessage.o memwatch.o -lm
+	gcc $(CFLAGS) -Wall -std=c99 -o procnanny.client client.o clientFunctions.o child.o pipeMessage.o memwatch.o -lm
 
 server.o: server.c memwatch.h
 	gcc $(CFLAGS) -Wall -std=c99 -c -DMEMWATCH -DMW_STDIO server.c
