@@ -381,7 +381,7 @@ void waitForClients(char* nodenames){
 
 			// read message
 			if(ret){
-				pritnf("client %d has shutdown", i);
+				printf("client %d has shutdown", i);
 				char header[8];
 
 				// read message

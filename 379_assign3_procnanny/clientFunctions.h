@@ -62,7 +62,7 @@ void connectToServer();
 void timestampToServer(char* input);
 void receiveConfig();
 void getHostName(char *name);
-void cleanExit()
+void cleanExit();
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);
