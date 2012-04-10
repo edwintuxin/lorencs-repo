@@ -8,8 +8,6 @@
 #include "clientFunctions.h"
 #include "memwatch.h"
 
-
-
 extern int sleepTime;
 extern int procCount;
 extern procs monitorProcs[128];
@@ -710,7 +708,7 @@ void cleanExit(){
 	strcpy(header, "exit");
 	write(sock, header, sizeof(header));
 	int killCountNet = htonl(killCount);
-	write(sock, killCountNet, sizeof(killCountNet));
+	write(sock, &killCountNet, sizeof(killCountNet));
 
 	// if this node has killed procs, then also send the hostname of this node
 	if (killCount > 0){
