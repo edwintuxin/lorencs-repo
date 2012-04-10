@@ -103,7 +103,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 			char hostname[32];
 			getHostName(hostname);
 			strcat(output, hostname);
-			strcat(output, "killed after exceeding ");
+			strcat(output, " killed after exceeding ");
 			sprintf(string, "%d", sleepTime);
 			strcat(output, string);
 			strcat(output, " seconds.\n");
