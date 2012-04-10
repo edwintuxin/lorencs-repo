@@ -210,7 +210,11 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 		case 0:
 			strcpy(message,"Info: No '");
 			strcat(message, monitorProcs[i].name);
-			strcat(message, "' processes found.\n");
+			strcat(message, "' processes found on node ");
+			char hostname[32];
+			getHostName(hostname);
+			strcat(message, hostname);
+			strcat(message, ".\n");
 			timestampToServer(message);
 			*pid = -1;
 			break;
@@ -301,8 +305,8 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
 void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
-		readServerMessages();
 		readChildMessages();	/* check if any children have left messages and process them */
+		readServerMessages();
 		rescanProcs();			/* look for the processes in the most recent config file */
 	}
 }
@@ -336,6 +340,7 @@ void readServerMessages(){
 					printf("%d\n", monitorProcs[i].sleep);
 				}
 			} else if (!strcmp(header, "exit")){
+				printf("I am now exiting cleanly\n");
 				cleanExit();
 			}
 		}

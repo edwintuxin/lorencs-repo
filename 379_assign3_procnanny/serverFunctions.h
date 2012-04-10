@@ -50,6 +50,7 @@ int* getPidList(char* procName,int *arraySize);
 void sendConfig(int client);
 void readClientMessages();
 void waitForClients(char* nodenames);
+int clientExited(int num, int exitedClients[32]);
 
 // Non-C99 compliant function prototypes
 FILE *popen(const char *command, const char *type);
