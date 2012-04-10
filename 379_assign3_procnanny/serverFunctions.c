@@ -338,7 +338,7 @@ void signalHandler(int signalNum){
 		strcat(message, kc);
 		strcat(message, " process(es) killed on ");
 		strcat(message, nodenames);
-		strcat(message, " .\n");
+		strcat(message, ".\n");
 
 		printToFile(message, 1, 1, logfile);
 
