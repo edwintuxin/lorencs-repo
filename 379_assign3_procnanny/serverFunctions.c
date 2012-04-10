@@ -13,7 +13,6 @@ extern FILE* logfile;
 extern FILE *serverlog;
 extern char configPath[128];
 extern procs monitorProcs[128];
-extern struct pipeMessage* msg;
 extern int killCount;
 extern struct sigaction* newAction[2];
 extern int clientCount;
@@ -106,7 +105,7 @@ void killPrevious(char* procname, int parentID){
 	free(pidList);
 	pidList = getPidList(procname, &lineCount);
 
-	char output[1048] = "";
+	char output[1024] = "";
 	char kc[16];
 
 	// if more than 1 'procnanny' running, kill was unsuccessful
@@ -320,26 +319,29 @@ void setHandler(int sigType, void* handler, int i){
 // handles the SIGINT and SIGHUP signals
 void signalHandler(int signalNum){
 	if (signalNum == SIGINT){
-		/*
-		// send exit message to all children
-		for (int i = 0; i < childCount; i++){
-			msg = init_message("exit");
-			write_message(childPool[i].p2c[1],msg);
-			resetMsg();
+
+		// send exit message to all client
+		for (int i = 0; i < clientCount; i++){
+			char header[8];
+			strcpy(header, "exit");
+			write(clients[i], header, sizeof(header));
 		}
 
-		// wait for the children to send their kill messages ("available")
-		// and their "exit complete" messages
-		waitForChildren();
+		char nodenames[1024] = "";
+		// wait for the clients to respond with their kill counts
+		waitForClients(nodenames);
 
 		// print final message
 		char kc[10];
 		char message[100] = "Info: Caught SIGINT. Exiting cleanly. ";
 		sprintf(kc,"%d",killCount);
 		strcat(message, kc);
-		strcat(message, " process(es) killed.\n");
-		printToFile(message, 1, 1 logfile);
-		*/
+		strcat(message, " process(es) killed on ");
+		strcat(message, nodenames);
+		strcat(message, " .\n");
+
+		printToFile(message, 1, 1, logfile);
+
 		cleanup();
 		exit(EXIT_SUCCESS);
 	}
@@ -355,6 +357,58 @@ void signalHandler(int signalNum){
 		//send new config file to each client
 		for (int i = 0; i < clientCount; i++){
 			sendConfig(clients[i]);
+		}
+	}
+}
+
+void waitForClients(char* nodenames){
+	int maxdesc, ret;
+	fd_set read_from;
+	struct timeval tv;
+	maxdesc = getdtablesize();
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	int exited = 0; 	/* count of exited clients */
+	// while not all children have "exit completed"
+	while (exited < clientCount){
+		for (int i = 0; i < clientCount; i++){
+			FD_ZERO(&read_from);
+			FD_SET(clients[i], &read_from);
+
+			// check if child send message
+			ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+
+			// read message
+			if(ret){
+				pritnf("client %d has shutdown", i);
+				char header[8];
+
+				// read message
+				read(clients[i], header, sizeof(header));
+
+				if (!strcmp(header, "exit")){
+					int clientKillCount;
+					read(clients[i], &clientKillCount, sizeof(clientKillCount));
+					clientKillCount = ntohl(clientKillCount);
+
+					// if this client has killed procs, append its nodename
+					if (clientKillCount > 0){
+						killCount = killCount + clientKillCount;
+						char nodename[16];
+						read(clients[i], nodename, sizeof(nodename));
+
+						//if it is not the first nodename appended, append a comma
+						if (strlen(nodenames) > 0){
+							strcat(nodenames, ", ");
+						}
+
+						strcat(nodenames, nodename);
+					}
+
+					exited++;
+				}
+			}
 		}
 	}
 }
@@ -409,21 +463,8 @@ int exists(char* line, int arraySize){
 	return returnVal;
 }
 
-// free memory allocated for the message and set it to NULL
-// so that the msg pointer can be reused many times by a process
-void resetMsg(){
-	free(msg->body);
-	free(msg);
-	msg = NULL;
-}
-
 // cleans up allocated memory, file pointers, and pipes
 void cleanup(){
-	if (msg != NULL){
-		free(msg->body);
-		free(msg);
-	}
-
 	free(newAction[0]);
 	free(newAction[1]);
 

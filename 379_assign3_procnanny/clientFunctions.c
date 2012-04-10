@@ -114,7 +114,7 @@ void killPrevious(char* procname, int parentID){
 	free(pidList);
 	pidList = getPidList(procname, &lineCount);
 
-	char output[1048] = "";
+	char output[1024] = "";
 	char kc[16];
 
 	// if more than 1 'procnanny' running, kill was unsuccessful
@@ -712,6 +712,14 @@ void cleanExit(){
 	int killCountNet = htonl(killCount);
 	write(sock, killCountNet, sizeof(killCountNet));
 
+	// if this node has killed procs, then also send the hostname of this node
+	if (killCount > 0){
+		char nodename[16];
+		getHostName(nodename);
+		write(sock, nodename, sizeof(nodename));
+	}
+
+	shutdown(sock, 2);
 	cleanup();
 	exit(1);
 }
