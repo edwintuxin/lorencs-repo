@@ -20,6 +20,7 @@ extern char hostname[128];
 extern int serverPort;
 extern int sock;
 
+// establish socket connection to server
 void connectToServer(){
 	struct	sockaddr_in	server;
 	struct	hostent		*host;
@@ -49,6 +50,7 @@ void connectToServer(){
 	}
 }
 
+// keep trying to receive config file
 void receiveConfig(){
 	int maxdesc, ret;
 	fd_set read_from;
@@ -57,26 +59,26 @@ void receiveConfig(){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
+	// run in while loop until config header is received
 	while (1) {
 		char header[8];
 
 		FD_ZERO(&read_from);
 		FD_SET(sock, &read_from);
 
-		// check if child send message
+		// check if child sent message
 		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
 		// read message
 		if(ret){
 			read (sock, header, sizeof(header));
 
+			// if header is config, receive the rest of the config info
 			if (!strcmp(header, "config")){
 				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
 				read (sock, &procCount, sizeof(procCount));
 				for(int i = 0; i < procCount; i++){
 					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
-					//printf("%s :", monitorProcs[i].name);
-					//printf("%d\n", monitorProcs[i].sleep);
 				}
 			}
 		break;
@@ -190,7 +192,6 @@ void initChildren(int *pid, int *_c2p, int *_p2c){
     int arraySize = procCount;
     char pidString[128];
 
-    //printf("procCount is %d\n", procCount);
     // dynamic array to hold the pids of children
 	childPool = malloc(procCount*sizeof(child));
 
@@ -306,11 +307,12 @@ void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
 		readChildMessages();	/* check if any children have left messages and process them */
-		readServerMessages();
+		readServerMessages();	/* check for any messges from server */
 		rescanProcs();			/* look for the processes in the most recent config file */
 	}
 }
 
+// read messages from server
 void readServerMessages(){
 	int maxdesc, ret;
 	fd_set read_from;
@@ -321,32 +323,31 @@ void readServerMessages(){
 
 	char header[8];
 
-		FD_ZERO(&read_from);
-		FD_SET(sock, &read_from);
+	FD_ZERO(&read_from);
+	FD_SET(sock, &read_from);
 
-		// check if child send message
-		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+	// check if server sent message
+	ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
-		// read message
-		if(ret){
-			read (sock, header, sizeof(header));
+	// read message
+	if(ret){
+		read (sock, header, sizeof(header));
 
-			if (!strcmp(header, "config")){
-				recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
-				read (sock, &procCount, sizeof(procCount));
-				for(int i = 0; i < procCount; i++){
-					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
-					//printf("%s :", monitorProcs[i].name);
-					//printf("%d\n", monitorProcs[i].sleep);
-				}
-			} else if (!strcmp(header, "exit")){
-				//printf("I am now exiting cleanly\n");
-				cleanExit();
+		// if it is an updated cenfig, update the config info
+		if (!strcmp(header, "config")){
+			recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
+			read (sock, &procCount, sizeof(procCount));
+			for(int i = 0; i < procCount; i++){
+				monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
 			}
+		// if message is exit, exit cleanly
+		} else if (!strcmp(header, "exit")){
+			cleanExit();
 		}
+	}
 }
 
-// check (once) if any children have left messages and process them
+// check if any children have left messages and process them
 void readChildMessages(){
 	// setup select
 	int maxdesc, ret;
@@ -358,6 +359,7 @@ void readChildMessages(){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
+	// for each child
 	for (int i = 0; i < childCount; i++){
 		FD_ZERO(&read_from);
 		FD_SET(childPool[i].c2p[0], &read_from);
@@ -365,8 +367,9 @@ void readChildMessages(){
 		// check if child 'i' has sent a message
 		ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
-		// read message
-		if(ret){
+		// while there are messages from child, keep reading
+		while (ret){
+			// read message
 			char message[256];
 			memset(message, 0, 256);
 			msg = read_message(childPool[i].c2p[0]);
@@ -396,8 +399,11 @@ void readChildMessages(){
 				write (sock, header, sizeof(header));
 				write (sock, output, sizeof(output));
 			}
-		}
 
+			//check again if child has message
+
+			ret = select(maxdesc, &read_from, NULL, NULL, &tv);
+		}
 	}
 }
 
@@ -621,6 +627,19 @@ void waitForChildren(){
 				} else if (!strcmp(message, "available 0")){
 					idleChildCount++;
 					childPool[i].m_pid = 0;
+				} else if (!strcmp(message, "output")){
+					/*// receive the output string from chlid
+					char output[256];
+					memset(output, 0, 256);
+					msg = read_message(childPool[i].c2p[0]);
+					strcpy(output, msg->body);
+					resetMsg();
+
+					// send it to server
+					char header[8];
+					strcpy(header, "output");
+					write (sock, header, sizeof(header));
+					write (sock, output, sizeof(output));*/
 				// if child has exited, increment the exited count
 				} else if (!strcmp(message, "exit complete")){
 					exited++;
@@ -695,8 +714,8 @@ void resetMsg(){
 	msg = NULL;
 }
 
+// wait for all children to exit, pass kill info to server, cleanup
 void cleanExit(){
-
 	// send exit message to all children
 	for (int i = 0; i < childCount; i++){
 		msg = init_message("exit");
@@ -709,6 +728,7 @@ void cleanExit(){
 	waitForChildren();
 
 	// send "exit complete" message to server
+	// followed by the kill count (and hostname is killcount>0)
 	char header[8];
 	strcpy(header, "exit");
 	write(sock, header, sizeof(header));
@@ -722,6 +742,7 @@ void cleanExit(){
 		write(sock, nodename, sizeof(nodename));
 	}
 
+	// shutdown socket and cleanup
 	shutdown(sock, 2);
 	cleanup();
 	exit(1);

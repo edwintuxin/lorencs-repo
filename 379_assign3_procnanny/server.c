@@ -22,35 +22,30 @@ int clients[32];				/* array of sockets to a max of 32 clients */
 int serverPort;					/* port that the server will attempt to listen on */
 int killCount;					/* kill count of all clients (calc'd at the end) */
 
-/*
- *
- *
- * FIX THE SERVER INIT OUTPUT
- *
- *
- *
- */
 int main(int argc, char* argv[]) {
 	// setup signal handlers
 	setHandler(SIGINT, signalHandler, 0);
 	setHandler(SIGHUP, signalHandler, 1);
+
+	//initialize port and counts
 	serverPort = 2000;
 	clientCount = 0;
 	killCount = 0;
 
+	// check arg count and scan in arg
 	if (argc != 2){
-		//printf("argc: %d\n", argc);
 		fprintf(stderr, "Error: Too few or too many arguments to %s.\n", argv[0]);
 		cleanup();
 		exit(0);
 	}
 	strncpy(configPath, argv[1], strlen(argv[1]));
 
+	// open the log files
 	serverlog = fopen(getenv("PROCNANNYSERVERINFO"), "w");
 	logfile = fopen(getenv("PROCNANNYLOGS"), "w");
 
     readFile();										/* read in the config file */
-    killPrevious("procnanny.server", getpid()); 	/* kill previous instances of procnanny */
+    killPrevious("procnanny.server", getpid()); 	/* kill previous instances of procnanny server */
 
     // server loops forever until it is sent SIGINT
     serverLoop();
