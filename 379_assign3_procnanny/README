@@ -8,9 +8,10 @@ TA's Name:		Arnamoy Bhattacharyya
 
 Program Description:
 
-The implementation of this assignment follows the same structure as the first assignment, with the required design changes applied. The execution starts in the 'main' file of the program, which simply calls on functions of other files to perform the required duties of the program. There are four source files to the program: 'main', 'mainFunctions', 'child', and 'pipeMessages'. The 'mainFunctions' file contains the majority of the functions used in the execution of the program. The 'child' file contains the code that is exclusively executed by the children during their run. The 'pipeMessages' file contains code that is used for to work with the messages that are sent over the UNIX pipes.
+The main changes in this assignment were the refactoring of the 'main' and 'mainFunctions' files into the correspondign equivalents for the client and server, as well as implementing sockets for client to server communication. The server starts execution in the 'server.c' file, and calls on functions in the 'serverFunctions.c' file. The client starts its execution in the 'client.c' file and calls on functions in the 'serverFunctions.c' and 'pipeMessage.c' files. The 'child.c' file contains the code that is exclusively executed by the children during their run. The 'pipeMessages' file contains code that is used for to work with the messages that are sent over the UNIX pipes between client and its children.
 
 Build Instructions:
-	- "make" to build the main program
+	- "make server" to build the server program
+	- "make client" to build the server program
 	- "make clean" will clean all files created by make (as well as memwatch log files)
 	- "make tar" makes the submit.tar file
