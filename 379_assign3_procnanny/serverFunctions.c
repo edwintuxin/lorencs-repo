@@ -198,7 +198,18 @@ void outputStartMsg(){
 	strcat(message, charport);
 	strcat(message, "\n");
 
-	printToFile(message, 1, 1, serverlog);
+	// print timestamped message to stdout
+	printToFile(message, 1, 1, NULL);
+
+	strcpy(message, "NODE ");
+	strcat(message, line);
+	strcat(message, " PID ");
+	strcat(message, cpid);
+	strcat(message, " PORT ");
+	strcat(message, charport);
+	strcat(message, "\n");
+
+	printToFile(message, 0, 0, serverlog);
 }
 
 void serverLoop(){
@@ -287,7 +298,10 @@ void readClientMessages(){
 		// read message
 		if(ret){
 			char header[8];
-			read (clients[i], header, sizeof(header));
+			if(!read (clients[i], header, sizeof(header))){
+				//printf("error in read!\n");
+				continue;
+			}
 			if (!strcmp(header, "output")){
 				char output[256];
 				read (clients[i], output, sizeof(output));
@@ -466,8 +480,10 @@ void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
 	if (p2stdout){
 		printf(output);
 	}
-	fprintf(file, output);
-	fflush(file);
+	if (file != NULL){
+		fprintf(file, output);
+		fflush(file);
+	}
 }
 
 // returns true if the string 'line' exists in the processNames array
