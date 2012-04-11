@@ -1,62 +1,26 @@
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'a.out' processes found.
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'elm' processes found.
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'prog2' processes found.
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'ass' processes found.
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'bitch' processes found.
-[Mon Apr  9 18:32:37 MDT 2012] Info: No 'titties' processes found.
-[Mon Apr  9 18:32:42 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:32:42 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:32:43 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:32:43 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:32:43 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:32:43 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:32:48 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:32:53 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:32:53 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:32:54 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:32:54 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:32:54 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:32:54 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:32:59 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:04 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:33:05 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:33:05 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:33:05 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:04 MDT 2012] Info: Initializing monitoring of process 'a.out' (PID 17490) on node vmimage.
-[Mon Apr  9 18:33:04 MDT 2012] Info: Initializing monitoring of process 'elm' (PID 17491) on node vmimage.
-[Mon Apr  9 18:33:10 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:33:10 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:33:10 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:33:10 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:33:10 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:08 MDT 2012] Action: PID 17490 (a.out) on vmimagekilled after exceeding 4 seconds.
-[Mon Apr  9 18:33:15 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:33:15 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:33:15 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:33:15 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:33:15 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:33:16 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:16 MDT 2012] Info: PID 17491 (elm) on vmimage has exited before exceeding 12 seconds.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:33:21 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'a.out' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'elm' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'prog2' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'ass' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'bitch' processes found on node vmimage.
-[Mon Apr  9 18:33:26 MDT 2012] Info: No 'titties' processes found on node vmimage.
-[Mon Apr  9 18:33:32 MDT 2012] Info: Caught SIGINT. Exiting cleanly. 1 process(es) killed on vmimage .
+[Tue Apr 10 18:57:20 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:20 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:25 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:25 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:30 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:30 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:30 MDT 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Tue Apr 10 18:57:35 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:35 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:40 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:40 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:45 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:45 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:46 MDT 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Tue Apr 10 18:57:51 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:51 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:57:53 MDT 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Tue Apr 10 18:57:53 MDT 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Tue Apr 10 18:57:53 MDT 2012] Info: Caught SIGHUP. Configuration file 'nanny.config' re-read.
+[Tue Apr 10 18:57:56 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:57:56 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:58:01 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:58:01 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:58:06 MDT 2012] Info: No 'yo' processes found on node vmimage.
+[Tue Apr 10 18:58:06 MDT 2012] Info: No 'sup' processes found on node vmimage.
+[Tue Apr 10 18:58:11 MDT 2012] Info: Caught SIGINT. Exiting cleanly. 0 process(es) killed.

@@ -258,7 +258,7 @@ void serverLoop(){
 			sendConfig(clients[clientCount]);
 
 			clientCount++;
-			listen(sock, 32);
+			//listen(sock, 32);
 		}
 
 		readClientMessages();
@@ -390,7 +390,7 @@ void waitForClients(char* nodenames){
 
 			// read message
 			if(ret){
-				printf("client %d has shutdown\n", i);
+				//printf("client %d has shutdown\n", i);
 				exitedClients[exited] = i;
 
 				char header[8];
@@ -463,9 +463,9 @@ void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
 		strcpy(output, input);
 	}
 
-	//if (p2stdout){
+	if (p2stdout){
 		printf(output);
-	//}
+	}
 	fprintf(file, output);
 	fflush(file);
 }

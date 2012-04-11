@@ -75,8 +75,8 @@ void receiveConfig(){
 				read (sock, &procCount, sizeof(procCount));
 				for(int i = 0; i < procCount; i++){
 					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
-					printf("%s :", monitorProcs[i].name);
-					printf("%d\n", monitorProcs[i].sleep);
+					//printf("%s :", monitorProcs[i].name);
+					//printf("%d\n", monitorProcs[i].sleep);
 				}
 			}
 		break;
@@ -336,11 +336,11 @@ void readServerMessages(){
 				read (sock, &procCount, sizeof(procCount));
 				for(int i = 0; i < procCount; i++){
 					monitorProcs[i].sleep = ntohl(monitorProcs[i].sleep);
-					printf("%s :", monitorProcs[i].name);
-					printf("%d\n", monitorProcs[i].sleep);
+					//printf("%s :", monitorProcs[i].name);
+					//printf("%d\n", monitorProcs[i].sleep);
 				}
 			} else if (!strcmp(header, "exit")){
-				printf("I am now exiting cleanly\n");
+				//printf("I am now exiting cleanly\n");
 				cleanExit();
 			}
 		}
