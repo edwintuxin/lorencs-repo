@@ -627,8 +627,9 @@ void waitForChildren(){
 				} else if (!strcmp(message, "available 0")){
 					idleChildCount++;
 					childPool[i].m_pid = 0;
+				// handle "output" message
 				} else if (!strcmp(message, "output")){
-					/*// receive the output string from chlid
+					// receive the output string from chlid
 					char output[256];
 					memset(output, 0, 256);
 					msg = read_message(childPool[i].c2p[0]);
@@ -639,7 +640,7 @@ void waitForChildren(){
 					char header[8];
 					strcpy(header, "output");
 					write (sock, header, sizeof(header));
-					write (sock, output, sizeof(output));*/
+					write (sock, output, sizeof(output));
 				// if child has exited, increment the exited count
 				} else if (!strcmp(message, "exit complete")){
 					exited++;
