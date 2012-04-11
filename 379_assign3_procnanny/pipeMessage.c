@@ -7,7 +7,6 @@
  * Shows a header/payload approach to message passing between processes using pipes.
  */
 
-#include <stdio.h>
 #include "pipeMessage.h"
 #include "memwatch.h"
 

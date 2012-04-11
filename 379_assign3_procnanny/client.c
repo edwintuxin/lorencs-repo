@@ -24,6 +24,7 @@ int sock;						/* socket on which the client communicates with server */
 
 int main(int argc, char* argv[]) {
 	pid_t pid = -1; 			/* variable to store the child's pid */
+	// initialize counts
 	childCount = 0;
 	idleChildCount = 0;
 	killCount = 0;
@@ -40,8 +41,8 @@ int main(int argc, char* argv[]) {
 	sscanf(argv[2], "%d", &serverPort);
 
 	connectToServer();								/* establish socket to server */
-    killPrevious("procnanny.client", getpid()); 	/* kill previous instances of procnanny */
-    receiveConfig();
+    killPrevious("procnanny.client", getpid()); 	/* kill previous instances of procnanny client */
+    receiveConfig();								/* don't proceed until config file is received */
 
     // initialize the children
     initChildren(&pid, c2p, p2c);

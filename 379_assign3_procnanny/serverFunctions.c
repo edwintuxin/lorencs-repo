@@ -53,8 +53,6 @@ void readFile(){
 			exit(0);
 		}
 
-
-
 		// check if the process name has been already scanned in, ignore it if it has
 		if (exists(name, lineCount)){
 			strcpy(message, "Warning: Ignoring duplicate process '");
@@ -66,6 +64,7 @@ void readFile(){
 
 		lineCount++;
 
+		// store the process name and sleep time (in network byte order)
 		strcpy(monitorProcs[lineCount-1].name, name);
 		monitorProcs[lineCount-1].sleep = htonl(sleeptime);
 	}
@@ -81,8 +80,7 @@ void killPrevious(char* procname, int parentID){
 	int lineCount = 0;
 	int killcount = 0;
 
-	//printf("cleaning up %s\n", procname);
-	// get a (dynamically alloc'd) list of PIDs with the proc name 'procnanny'
+	// get a (dynamically alloc'd) list of PIDs with the name specified in procname
 	// save the count of these PIDs to lineCount
 	int *pidList = getPidList(procname, &lineCount);
 
@@ -95,7 +93,6 @@ void killPrevious(char* procname, int parentID){
 	// kill the processes and count how many were killed
 	for(int i=0; i < lineCount; i++){
 		if (pidList[i] != parentID){
-			//printf("killing %d\n", pidList[i]);
 			kill(pidList[i], SIGKILL);
 			killcount++;
 		}
@@ -144,7 +141,6 @@ int* getPidList(char* procName,int *arraySize){
 	strcat(command, " | grep -w ");
 	strcat(command, procName);
 	strcat(command, " | grep -v 'grep'");
-	//printf("running %s\n", command);
 
 	// open the command for reading
 	fp = popen(command, "r");
@@ -156,7 +152,6 @@ int* getPidList(char* procName,int *arraySize){
 
 	// Read the output a line at a time, save the pid's of the matching processes
 	while (fgets(line, MAX_PROC_NAME + 30, fp)) {
-		//printf(line);
 		lineCount++;
 		// realloc if more space needed
 		if (lineCount > currentSize){
@@ -174,6 +169,7 @@ int* getPidList(char* procName,int *arraySize){
 	return pidList;
 }
 
+// output the pid, node, and port to stdut and to server log file
 void outputStartMsg(){
 	char message[128] = "procnanny server: PID ";
 	int ipid = getpid();
@@ -212,7 +208,9 @@ void outputStartMsg(){
 	printToFile(message, 0, 0, serverlog);
 }
 
+// in a loop, listen for incoming connections, handle client messages
 void serverLoop(){
+	// setup select, etc
 	int maxdesc, ret;
 	fd_set read_from;
 	struct timeval tv;
@@ -288,6 +286,7 @@ void readClientMessages(){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
+	// check each client for a header message
 	for (int i = 0; i < clientCount; i++){
 		FD_ZERO(&read_from);
 		FD_SET(clients[i], &read_from);
@@ -298,10 +297,12 @@ void readClientMessages(){
 		// read message
 		if(ret){
 			char header[8];
+			// if read returns 0 (client may have been killed), continue to next client
 			if(!read (clients[i], header, sizeof(header))){
-				//printf("error in read!\n");
 				continue;
 			}
+
+			//if header is "output", receive the next string and print it to logfile
 			if (!strcmp(header, "output")){
 				char output[256];
 				read (clients[i], output, sizeof(output));
@@ -342,7 +343,8 @@ void signalHandler(int signalNum){
 		}
 
 		char nodenames[1024] = "";
-		// wait for the clients to respond with their kill counts
+		// wait for the clients to respond with their kill counts and
+		// record the node names of those clients that had kills
 		waitForClients(nodenames);
 
 		// print final message
@@ -379,6 +381,8 @@ void signalHandler(int signalNum){
 	}
 }
 
+// wait for the clients to respond with their kill counts and
+// record the node names of those clients that had kills
 void waitForClients(char* nodenames){
 	int maxdesc, ret;
 	fd_set read_from;
@@ -387,11 +391,14 @@ void waitForClients(char* nodenames){
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
+	// array of client ids that have exited
 	int exitedClients[32] = {[0 ... 31] = -1};
 	int exited = 0; 	/* count of exited clients */
-	// while not all children have "exit completed"
+
+	// while not all clients have exited
 	while (exited < clientCount){
 		for (int i = 0; i < clientCount; i++){
+			// if the client's id is recorded in the array of ids, continue to next client
 			if (clientExited(i, exitedClients)){
 				continue;
 			}
@@ -399,21 +406,28 @@ void waitForClients(char* nodenames){
 			FD_ZERO(&read_from);
 			FD_SET(clients[i], &read_from);
 
-			// check if child send message
+			// check if client send message
 			ret = select(maxdesc, &read_from, NULL, NULL, &tv);
 
 			// read message
 			if(ret){
-				//printf("client %d has shutdown\n", i);
-				exitedClients[exited] = i;
-
 				char header[8];
 
 				// read message
 				read(clients[i], header, sizeof(header));
 
-				if (!strcmp(header, "exit")){
+
+				//if header is "output", receive the next string and print it to logfile
+				if (!strcmp(header, "output")){
+					char output[256];
+					read (clients[i], output, sizeof(output));
+					printToFile(output, 0, 0, logfile);
+
+				// if header is "exit", confirmation that client has exited
+				}else if (!strcmp(header, "exit")){
 					int clientKillCount;
+
+					//receive the client's kill count
 					read(clients[i], &clientKillCount, sizeof(clientKillCount));
 					clientKillCount = ntohl(clientKillCount);
 
@@ -432,12 +446,14 @@ void waitForClients(char* nodenames){
 					}
 
 					exited++;
+					exitedClients[exited] = i;
 				}
 			}
 		}
 	}
 }
 
+// checks if 'num' is in the array 'exitedClients'
 int clientExited(int num, int exitedClients[32]){
 	int returnVal = 0;
 
@@ -450,9 +466,10 @@ int clientExited(int num, int exitedClients[32]){
 	return returnVal;
 }
 
-// take string input, timestamps it and print to logfile
+// take string input, and print to logfile
 // if p2stdout is 1, also prints to stdout
 // if timestamp is 1, it timestamps it
+// if logfile is NULL, don't print it to any file
 void printToFile(char* input, int p2stdout, int timestamp, FILE* file){
 	char output[1000];
 

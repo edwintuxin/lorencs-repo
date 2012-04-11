@@ -14,6 +14,7 @@
 struct pipeMessage* msg;
 int msgVal;								/* child's return value */
 
+// wait for messages from parent and respond appropriately
 void childExec(int *c2p, int *p2c){
 	while(1){
 		char message[256];
@@ -22,7 +23,7 @@ void childExec(int *c2p, int *p2c){
 		strcpy(message, msg->body);
 		resetMsg();
 
-
+		// handle exit or monitor messages
 		if (!strcmp(message, "exit")){
 			childExit(c2p);
 		} else if (!strncmp(message, "monitor", 7)){
@@ -30,6 +31,7 @@ void childExec(int *c2p, int *p2c){
 			char pidToKill[20];
 			int sleepTime;
 
+			// parse the message for the monitor info
 			sscanf(message, "monitor %s %s %d", procToKill, pidToKill, &sleepTime);
 			monitorProcess(procToKill, pidToKill, sleepTime, c2p, p2c);
 		}
@@ -46,6 +48,7 @@ void childExit(int *c2p){
 	exit(EXIT_SUCCESS);
 }
 
+// monitor a process
 void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, int *p2c){
 	int killResult;		/* boolean to hold the return value of the kill funct */
 	int *pidList;
@@ -137,6 +140,7 @@ void monitorProcess(char *procToKill, char *pidToKill, int sleepTime, int *c2p, 
 	free(pidList);
 }
 
+// timestamp a message and pass it to the parent
 void timestampToParent(char* input, int *c2p){
 	FILE* fp = popen("date", "r");
 	if (fp == NULL) {
