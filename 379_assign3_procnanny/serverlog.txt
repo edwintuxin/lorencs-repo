@@ -1,1 +1,1 @@
-[Mon Apr  9 18:32:28 MDT 2012] procnanny server: PID 17298 on node vmimage, port 1337
+[Tue Apr 10 18:57:17 MDT 2012] procnanny server: PID 18255 on node vmimage, port 1337
