@@ -22,11 +22,19 @@ int clients[32];				/* array of sockets to a max of 32 clients */
 int serverPort;					/* port that the server will attempt to listen on */
 int killCount;					/* kill count of all clients (calc'd at the end) */
 
+/*
+ *
+ *
+ * FIX THE SERVER INIT OUTPUT
+ *
+ *
+ *
+ */
 int main(int argc, char* argv[]) {
 	// setup signal handlers
 	setHandler(SIGINT, signalHandler, 0);
 	setHandler(SIGHUP, signalHandler, 1);
-	serverPort = 1337;
+	serverPort = 2000;
 	clientCount = 0;
 	killCount = 0;
 

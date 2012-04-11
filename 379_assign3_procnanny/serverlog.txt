@@ -1,1 +1,1 @@
-[Tue Apr 10 18:57:17 MDT 2012] procnanny server: PID 18255 on node vmimage, port 1337
+NODE ue11 PID 17133 PORT 2000
