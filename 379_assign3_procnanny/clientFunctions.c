@@ -307,7 +307,7 @@ void parentLoop(){
 	while(1){
 		sleep(5);				/* sleep 5 seconds */
 		readChildMessages();	/* check if any children have left messages and process them */
-		readServerMessages();	/* check for any messges from server */
+		readServerMessages();	/* check for any messages from server */
 		rescanProcs();			/* look for the processes in the most recent config file */
 	}
 }
@@ -333,7 +333,7 @@ void readServerMessages(){
 	if(ret){
 		read (sock, header, sizeof(header));
 
-		// if it is an updated cenfig, update the config info
+		// if it is an updated config, update the config info
 		if (!strcmp(header, "config")){
 			recv (sock, &monitorProcs, sizeof(monitorProcs), 0);
 			read (sock, &procCount, sizeof(procCount));
