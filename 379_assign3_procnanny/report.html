@@ -760,7 +760,7 @@ asciidoc.install();
 </div>
 <div class="sect4">
 <h5 id="_pipe_messages">Pipe Messages</h5>
-<div class="paragraph"><p>The parent to child messages remain the same as assign2 (descriptions follow new message types):</p></div>
+<div class="paragraph"><p>The parent to child messages remain the same as assign2:</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -789,7 +789,7 @@ tells parent that the next message is an output string that must be passed to se
 </li>
 <li>
 <p>
-<em>available 0</em> or <em>available 1</em>
+<em>available 0/1</em>
 </p>
 </li>
 <li>
@@ -810,7 +810,7 @@ tells parent that the next message is an output string that must be passed to se
 <div class="ulist"><ul>
 <li>
 <p>
-tells client that the next message is a config struct (in the form of an array of structs with string and int elements)
+tells client that the next message is the config data (array of structs with string and int elements)
 </p>
 </li>
 <li>
@@ -917,6 +917,12 @@ make sure each client reports the correct amount of kills and the server properl
 <div class="sect2">
 <h3 id="_conclusion">Conclusion:</h3>
 <div class="paragraph"><p>The hardest, but also most interesting, part of this assignment was coming up with a protocol for passing messages between the server and clients. The refactoring of the program into seperate server and client files was also a challenge.</p></div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2012-04-11 21:24:08 Mountain Daylight Time
 </div>
 </div>
 </body>
