@@ -18,7 +18,7 @@ The client begins by connecting to the server, killing previous processes, and t
 Most of the code pertaining to this relationship remains unchanged. The only changes are the way that the child and parent perform their prints. A child formats the output string and sends it in a pipe message to the parent, who passes it to the server.
 
 ===== Pipe Messages
-The parent to child messages remain the same as assign2 (descriptions follow new message types):
+The parent to child messages remain the same as assign2:
 
 * 'monitor procName pid sleepTime'
 * 'exit'
@@ -27,14 +27,14 @@ The child can send a new type of message 'output':
 
 * 'output'
   - tells parent that the next message is an output string that must be passed to server
-* 'available 0' or 'available 1'
+* 'available 0/1'
 * 'exit complete'
 
 ===== Socket Messages
 Every socket message is preceded by a "header" message. This is an 8 char string defining the type of message that is to follow. Both sides know what size of message to accept for each type. The server to client messages are:
 
 * 'config'
-  - tells client that the next message is a config struct (in the form of an array of structs with string and int elements)
+  - tells client that the next message is the config data (array of structs with string and int elements)
   - the message after that is the count of process names 
 * 'exit'
   - tells client to exit cleanly and pass info back to server
